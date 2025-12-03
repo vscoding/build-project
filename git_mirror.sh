@@ -4,5 +4,5 @@ SHELL_FOLDER=$(cd "$(dirname "$0")" && pwd) && cd "$SHELL_FOLDER"
 source git/mirrors.sh
 
 mirror_to_code "devops/build-project"
-mirror_to_gitlab "svcops/build-project"
+mirror_to_gitlab "vscoding/build-project"
 mirror_to_github "vscoding/build-project"
