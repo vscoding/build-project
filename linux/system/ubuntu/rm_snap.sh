@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2164 disable=SC2086 disable=SC1090
-[ -z $ROOT_URI ] && source <(curl -sSL https://gitlab.com/iprt/shell-basic/-/raw/main/build-project/basic.sh)
+[ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
 export ROOT_URI=$ROOT_URI
 
 source <(curl -sSL $ROOT_URI/func/log.sh)

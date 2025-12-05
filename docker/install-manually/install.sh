@@ -3,7 +3,7 @@
 SHELL_FOLDER=$(cd "$(dirname "$0")" && pwd)
 cd "$SHELL_FOLDER"
 
-[ -z $ROOT_URI ] && source <(curl -sSL https://gitlab.com/iprt/shell-basic/-/raw/main/build-project/basic.sh)
+[ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
 
 source <(curl -sSL $ROOT_URI/func/log.sh)
 

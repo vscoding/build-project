@@ -3,7 +3,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://gitlab.com/iprt/shell-basic/-/raw/main/build-project/basic.sh)
+[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://dev.kubectl.org/init)
 
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 

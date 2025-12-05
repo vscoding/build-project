@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # 初始化根URI和依赖
-[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://gitlab.com/iprt/shell-basic/-/raw/main/build-project/basic.sh)
+[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://dev.kubectl.org/init)
 
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 source <(curl -sSL "$ROOT_URI/func/ostype.sh")

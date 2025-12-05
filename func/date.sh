@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC1090 disable=SC2028 disable=SC2086
-[ -z "$ROOT_URI" ] && source <(curl -sSL https://gitlab.com/iprt/shell-basic/-/raw/main/build-project/basic.sh) && export ROOT_URI=$ROOT_URI
+[ -z "$ROOT_URI" ] && source <(curl -sSL https://dev.kubectl.org/init) && export ROOT_URI=$ROOT_URI
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 
 # 定义日期格式列表

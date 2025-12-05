@@ -15,7 +15,7 @@ if [[ "$test_mode" != "false" ]]; then
   test_mode="true"
 fi
 
-[ -z $ROOT_URI ] && source <(curl -sSL https://gitlab.com/iprt/shell-basic/-/raw/main/build-project/basic.sh)
+[ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
 echo -e "\033[0;32mROOT_URI=$ROOT_URI\033[0m"
 
 source <(curl -sSL $ROOT_URI/func/log.sh)
