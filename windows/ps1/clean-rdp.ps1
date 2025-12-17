@@ -5,7 +5,19 @@ if (-not $PSCommandPath) {
     Write-Host "Running via iex, bootstrapping to file..."
 
     $tmp = Join-Path $env:TEMP ([guid]::NewGuid().ToString() + ".ps1")
-    $src = (Get-Variable MyInvocation -Scope 0).Value.Line
+    # When executed via `iwr ... | iex`, PSCommandPath is empty and the code
+    # runs from a ScriptBlock. Grab the current script text robustly.
+    $inv = Get-Variable MyInvocation -Scope 0 -ValueOnly
+    $src = $null
+    if ($inv.MyCommand.ScriptBlock) {
+        $src = $inv.MyCommand.ScriptBlock.ToString()
+    }
+    if (-not $src) {
+        $src = $inv.MyCommand.Definition
+    }
+    if (-not $src) {
+        $src = $inv.Line
+    }
 
     Set-Content -Path $tmp -Value $src -Encoding UTF8
     powershell -NoProfile -ExecutionPolicy Bypass -File $tmp
