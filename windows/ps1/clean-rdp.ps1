@@ -1,7 +1,14 @@
 # ===============================
 # Bootstrap if running via iex
 # ===============================
-if (-not $PSCommandPath) {
+
+# Use a bootstrap flag to avoid infinite loops on environments where
+# $PSCommandPath may not be populated as expected.
+$__bootstrapFlag = '--bootstrapped'
+$__isBootstrapped = $false
+if ($args -and ($args -contains $__bootstrapFlag)) { $__isBootstrapped = $true }
+
+if (-not $PSCommandPath -and -not $__isBootstrapped) {
     Write-Host "Running via iex, bootstrapping to file..."
 
     $tmp = Join-Path $env:TEMP ([guid]::NewGuid().ToString() + ".ps1")
@@ -20,7 +27,7 @@ if (-not $PSCommandPath) {
     }
 
     Set-Content -Path $tmp -Value $src -Encoding UTF8
-    powershell -NoProfile -ExecutionPolicy Bypass -File $tmp
+    powershell -NoProfile -ExecutionPolicy Bypass -File $tmp $__bootstrapFlag
     exit
 }
 
@@ -37,8 +44,13 @@ function Test-IsAdmin {
 if (-not (Test-IsAdmin)) {
     Write-Host "Requesting administrative privileges..."
 
+    # Preserve bootstrap flag so the elevated process won't attempt to
+    # bootstrap again even if some environments still don't set PSCommandPath.
+    $argList = @('-NoProfile','-ExecutionPolicy','Bypass','-File',"$PSCommandPath")
+    if ($__isBootstrapped) { $argList += $__bootstrapFlag }
+
     Start-Process -FilePath powershell `
-        -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
+        -ArgumentList ($argList -join ' ') `
         -Verb RunAs
     exit
 }
