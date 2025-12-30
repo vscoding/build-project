@@ -99,8 +99,8 @@ function nginx_action() {
   local start_all_resources_key="$3"
   log_info "action" "start action: $action"
 
-  declare -n start_resources="$start_resources_key"
-  declare -n start_all_resources="$start_all_resources_key"
+  local -n START_RESOURCES="$start_resources_key"
+  local -n START_ALL_RESOURCES="$start_all_resources_key"
 
   case $action in
     "statistic")
@@ -109,24 +109,24 @@ function nginx_action() {
     "update")
       git_pull
       docker_compose_pull
-      update_resources "${start_all_resources[@]}"
+      update_resources "${START_ALL_RESOURCES[@]}"
       ;;
     "stop")
       stop
       ;;
     "start")
-      start "${start_resources[@]}"
+      start "${START_RESOURCES[@]}"
       ;;
     "start_all")
-      start "${start_all_resources[@]}"
+      start "${START_ALL_RESOURCES[@]}"
       ;;
     "restart")
       stop
-      start "${start_resources[@]}"
+      start "${START_RESOURCES[@]}"
       ;;
     "restart_all")
       stop
-      start "${start_all_resources[@]}"
+      start "${START_ALL_RESOURCES[@]}"
       ;;
     *)
       log_error "action" "unknown action: $action"
