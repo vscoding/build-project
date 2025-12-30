@@ -15,10 +15,16 @@ _log() {
   [[ -n "$remark" ]] && remark_str="${REMARK_COLOR}[ ${remark} ]${NC} "
 
   if [[ -n "$remark" && -n "$msg" ]]; then
+    # 两者都有，正常显示
     echo -e "${TS_COLOR}${ts}${NC} - ${level_str} ${remark_str}${msg}"
   elif [[ -n "$msg" ]]; then
+    # 只有 msg
     echo -e "${TS_COLOR}${ts}${NC} - ${level_str} ${msg}"
+  elif [[ -n "$remark" ]]; then
+    # 只有 remark，将其作为主要内容显示（不带方括号修饰，或者保留修饰）
+    echo -e "${TS_COLOR}${ts}${NC} - ${level_str} ${remark}"
   else
+    # 两者都无
     echo -e "${TS_COLOR}${ts}${NC} - ${level_str}"
   fi
 }
