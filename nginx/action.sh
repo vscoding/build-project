@@ -12,7 +12,7 @@ if is_windows; then
   export MSYS_NO_PATHCONV=1
 fi
 
-function action() {
+function nginx_action() {
   function statistic() {
     # Define the file suffixes to be counted
     local suffixes=("conf" "lua")
