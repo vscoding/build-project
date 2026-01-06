@@ -173,7 +173,7 @@ get_image_digest() {
 # ------------------------------------------------------------
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   if [[ $# -lt 3 ]]; then
-    echo "Usage: $0 <registry> <repo> <tag> [http_proxy]" >&2
+    echo "Usage: ./get_image_digest.sh <registry> <repo> <tag> [http_proxy]" >&2
     exit 1
   fi
 
