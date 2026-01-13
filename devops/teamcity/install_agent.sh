@@ -20,15 +20,15 @@ fi
 
 function install_teamcity_agent() {
   function try_unzip() {
-    if [ -f "$teamcity_agent_path/buildAgentFull.zip" ]; then
+    if [ -f "$teamcity_agent_path/buildAgent.zip" ]; then
       log_info "teamcity" "download teamcity agent success"
     else
       log_error "teamcity" "download teamcity agent failed"
       exit 1
     fi
 
-    log_info "teamcity" "unzip $teamcity_agent_path/buildAgentFull.zip"
-    unzip $teamcity_agent_path/buildAgentFull.zip -d $teamcity_agent_path/agent
+    log_info "teamcity" "unzip $teamcity_agent_path/buildAgent.zip"
+    unzip $teamcity_agent_path/buildAgent.zip -d $teamcity_agent_path/agent
   }
 
   try_unzip

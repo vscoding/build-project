@@ -19,7 +19,7 @@ fi
 
 function install_multi_teamcity_agent() {
   log_info "teamcity" "install multi teamcity agent"
-  if [ -f "$teamcity_agent_path/buildAgentFull.zip" ]; then
+  if [ -f "$teamcity_agent_path/buildAgent.zip" ]; then
     log_info "teamcity" "download teamcity agent success"
   else
     log_error "teamcity" "download teamcity agent failed"
@@ -60,7 +60,7 @@ function install_multi_teamcity_agent() {
 
     for ((i = 1; i <= $agent_num; i++)); do
       log_info "teamcity" "install teamcity agent $i"
-      unzip $teamcity_agent_path/buildAgentFull.zip -d $teamcity_agent_path/agent$i
+      unzip $teamcity_agent_path/buildAgent.zip -d $teamcity_agent_path/agent$i
 
       log_info "teamcity" "edit $teamcity_agent_path/agent$i/conf/buildAgent.properties"
 
