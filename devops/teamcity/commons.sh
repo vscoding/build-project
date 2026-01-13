@@ -142,8 +142,7 @@ function download_teamcity_agent() {
     confirm="y"
   fi
 
-  if [ "$confirm" != "y" ]; then
-    # 下载teamcity-agent
+  if [ "$confirm" == "y" ]; then
     wget $teamcity_server/update/buildAgent.zip -O $teamcity_agent_path/buildAgent.zip
   fi
 
