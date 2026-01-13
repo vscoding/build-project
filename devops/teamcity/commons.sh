@@ -115,17 +115,18 @@ function download_teamcity_agent() {
 
     read -p "Enter y to continue remove $teamcity_agent_path :" confirm
     if [ "$confirm" != "y" ]; then
-      log_warn "teamcity" "exit remove teamcity agent"
-      return 1
+      log_warn "teamcity" "skip remove teamcity agent"
+    else
+      remove_systemd
+
+      log_info "teamcity" "remove teamcity agent install path $teamcity_agent_path"
+      rm -rf $teamcity_agent_path
+      log_info "teamcity" "create teamcity agent install path $teamcity_agent_path"
+      mkdir -p $teamcity_agent_path
     fi
 
-    remove_systemd
-
-    log_info "teamcity" "remove teamcity agent install path $teamcity_agent_path"
-    rm -rf $teamcity_agent_path
-    log_info "teamcity" "create teamcity agent install path $teamcity_agent_path"
-    mkdir -p $teamcity_agent_path
   else
+
     log_info "teamcity" "create teamcity agent install path $teamcity_agent_path"
     mkdir -p $teamcity_agent_path
   fi
