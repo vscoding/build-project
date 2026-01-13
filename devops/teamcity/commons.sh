@@ -130,13 +130,25 @@ function download_teamcity_agent() {
     mkdir -p $teamcity_agent_path
   fi
 
-  # 下载teamcity-agent
-  wget $teamcity_server/update/buildAgentFull.zip -O $teamcity_agent_path/buildAgentFull.zip
-  if unzip -t "$teamcity_agent_path/buildAgentFull.zip" &>/dev/null; then
-    log_info "teamcity" "The file $teamcity_agent_path/buildAgentFull.zip is a valid zip file."
+  if [ -f $teamcity_agent_path/buildAgent.zip ]; then
+    # file exist ,re download ?
+    read -p "The file $teamcity_agent_path/buildAgent.zip already exists. Do you want to re-download it? [y/n]: " confirm
+    if [ -z $confirm ]; then
+      log_error "teamcity" "confirm is empty. use n"
+      confirm="n"
+    fi
+  fi
+
+  if [ "$confirm" != "y" ]; then
+    # 下载teamcity-agent
+    wget $teamcity_server/update/buildAgent.zip -O $teamcity_agent_path/buildAgent.zip
+  fi
+
+  if unzip -t "$teamcity_agent_path/buildAgent.zip" &>/dev/null; then
+    log_info "teamcity" "The file $teamcity_agent_path/buildAgent.zip is a valid zip file."
     return 0
   else
-    log_error "teamcity" "The file $teamcity_agent_path/buildAgentFull.zip is not a valid zip file."
+    log_error "teamcity" "The file $teamcity_agent_path/buildAgent.zip is not a valid zip file."
     return 1
   fi
 }
