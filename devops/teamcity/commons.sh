@@ -137,6 +137,9 @@ function download_teamcity_agent() {
       log_error "teamcity" "confirm is empty. use n"
       confirm="n"
     fi
+  else
+    # file not exist , download
+    confirm="y"
   fi
 
   if [ "$confirm" != "y" ]; then
