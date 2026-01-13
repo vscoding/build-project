@@ -20,7 +20,7 @@ function prepare() {
   source $HOME/.bashrc
   if [ -z $JAVA_HOME ]; then
     log_error "prepare" "JAVA_HOME is not set"
-    retrun 1
+    return 1
   else
     log_info "prepare" "JAVA_HOME is $JAVA_HOME"
 
