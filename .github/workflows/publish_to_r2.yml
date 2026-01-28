@@ -1,0 +1,163 @@
+name: Sync working directory to R2 (with excludes)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: { }
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r2-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install rclone
+        run: |
+          set -euo pipefail
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure rclone for Cloudflare R2 (S3 API)
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+          : "${R2_ACCOUNT_ID:?Missing secret R2_ACCOUNT_ID}"
+          : "${R2_ACCESS_KEY_ID:?Missing secret R2_ACCESS_KEY_ID}"
+          : "${R2_SECRET_ACCESS_KEY:?Missing secret R2_SECRET_ACCESS_KEY}"
+
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf <<EOF
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${R2_ACCESS_KEY_ID}
+          secret_access_key = ${R2_SECRET_ACCESS_KEY}
+          endpoint = https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+          acl = private
+          EOF
+
+      - name: Sync working directory to R2 (with excludes)
+        env:
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PREFIX: ${{ secrets.R2_PREFIX }} # e.g. repo or scripts
+          PURGE_BEFORE_SYNC: ${{ vars.PURGE_BEFORE_SYNC }} # 可选：在 GitHub Variables 里设置 "true"
+        run: |
+          set -euo pipefail
+
+          : "${R2_BUCKET:?Missing secret R2_BUCKET}"
+          PREFIX="${R2_PREFIX:-repo}"
+
+          # 防呆：禁止把目标前缀设置为空或根目录
+          if [[ -z "${PREFIX}" || "${PREFIX}" == "/" ]]; then
+            echo "Refuse to sync: R2_PREFIX is empty or '/'."
+            exit 2
+          fi
+
+          SRC="."
+          DEST="r2:${R2_BUCKET}/${PREFIX}"
+
+          # 防呆：避免把“空目录”同步上去（空目录 + sync 会触发删除远端内容）
+          FILES_COUNT="$(find "${SRC}" -maxdepth 2 -type f \
+            ! -path "./.git/*" \
+            ! -path "./.github/*" \
+            | wc -l | tr -d ' ')"
+          if [[ "${FILES_COUNT}" -lt 1 ]]; then
+            echo "Source looks empty (after basic filters), abort."
+            exit 3
+          fi
+
+          echo "Source: ${SRC}"
+          echo "Dest:   ${DEST}"
+
+          # 统一的排除规则：尽量把“永远不该上 R2 的东西”排掉
+          # 你可以按你的仓库再加：
+          #   --exclude "dist/**" 或保留 dist 则别排
+          EXCLUDES=(
+            --exclude ".git/**"
+            --exclude ".github/**"
+            --exclude "**/.DS_Store"
+            --exclude "**/Thumbs.db"
+
+            --exclude "**/.idea/**"
+            --exclude "**/.vscode/**"
+            --exclude "**/.classpath"
+            --exclude "**/.project"
+            --exclude "**/.settings/**"
+
+            --exclude "**/node_modules/**"
+            --exclude "**/bower_components/**"
+            --exclude "**/.pnpm-store/**"
+            --exclude "**/.npm/**"
+            --exclude "**/.yarn/**"
+            --exclude "**/.cache/**"
+
+            --exclude "**/target/**"
+            --exclude "**/build/**"
+            --exclude "**/out/**"
+            --exclude "**/.gradle/**"
+
+            --exclude "**/*.log"
+            --exclude "**/*.tmp"
+            --exclude "**/*.swp"
+
+            # 敏感文件：按需扩展
+            --exclude "**/.env"
+            --exclude "**/.env.*"
+            --exclude "**/*.pem"
+            --exclude "**/*.key"
+            --exclude "**/*id_rsa*"
+            --exclude "**/*secret*"
+            --exclude "**/secrets/**"
+          )
+
+          COMMON_FLAGS=(
+            --fast-list
+            --checksum
+            --s3-no-check-bucket
+            --transfers 16
+            --checkers 16
+            --stats 10s
+            --log-level INFO
+          )
+
+          # 预演：先 dry-run 看会上传/删除哪些对象
+          echo "==== Dry-run sync preview ===="
+          rclone sync "${SRC}" "${DEST}" \
+            "${EXCLUDES[@]}" \
+            "${COMMON_FLAGS[@]}" \
+            --dry-run
+
+          # 可选：先清空目标前缀（危险操作，默认不开）
+          if [[ "${PURGE_BEFORE_SYNC:-}" == "true" ]]; then
+            echo "==== PURGE_BEFORE_SYNC enabled: purging ${DEST} ===="
+            # 再做一次 dry-run purge
+            rclone purge "${DEST}" --s3-no-check-bucket --dry-run || true
+            rclone purge "${DEST}" --s3-no-check-bucket --log-level INFO
+          fi
+
+          echo "==== Real sync ===="
+          rclone sync "${SRC}" "${DEST}" \
+            "${EXCLUDES[@]}" \
+            "${COMMON_FLAGS[@]}"
+
+      - name: List remote (top-level)
+        env:
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PREFIX: ${{ secrets.R2_PREFIX }}
+        run: |
+          set -euo pipefail
+          PREFIX="${R2_PREFIX:-repo}"
+          rclone lsf "r2:${R2_BUCKET}/${PREFIX}" --max-depth 2 | head -n 100
