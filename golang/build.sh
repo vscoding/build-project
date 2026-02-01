@@ -2,7 +2,7 @@
 # shellcheck disable=SC2086 disable=SC2155 disable=SC2126 disable=SC1090 disable=SC2028
 set -euo pipefail # 严格模式：遇到错误立即退出，使用未定义变量报错
 
-[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://dev.kubectl.org/init) && export ROOT_URI=$ROOT_URI
+[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://dev.kubectl.org/init)
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 source <(curl -sSL "$ROOT_URI/func/ostype.sh")
 source <(curl -sSL "$ROOT_URI/func/command_exists.sh")
