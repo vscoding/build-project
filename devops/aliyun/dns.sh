@@ -250,7 +250,7 @@ function getDomainRecords() {
     echo $data | jq -c '.[]'
   }
 
-  if [ $code -eq 200 ]; then
+  if [ "$code" == "200" ] || [ "$code" == "" ]; then
     clearAndList $pageNum $pageSz
     local rtPageNumber=$(echo $result | jq -r ".pageNumber")
     local totalPage=$(echo $result | jq -r ".totalPage")
@@ -260,29 +260,29 @@ function getDomainRecords() {
     fi
 
     while true; do
-      read -p "查询上一���(p) 查询下一页(n|Enter) 退出(q): " pn
+      read -p "查询上一页(p) 查询下一页(n|Enter) 退出(q): " pn
       case "$pn" in
-      q)
-        log_warn "dns" "退出分页查询域名的解析记录"
-        exit 0
-        ;;
-      n | "")
-        if [ $rtPageNumber -ge $totalPage ]; then
-          getDomainRecords 1 $pageSz $rrKw $valueKw
-        else
-          getDomainRecords $((rtPageNumber + 1)) $pageSz $rrKw $valueKw
-        fi
-        ;;
-      p)
-        if [ $rtPageNumber -eq 1 ]; then
-          getDomainRecords $totalPage $pageSz $rrKw $valueKw
-        else
-          getDomainRecords $((rtPageNumber - 1)) $pageSz $rrKw $valueKw
-        fi
-        ;;
-      *)
-        log_warn "dns" "无效的输入，请重新选择"
-        ;;
+        q)
+          log_warn "dns" "退出分页查询域名的解析记录"
+          exit 0
+          ;;
+        n | "")
+          if [ $rtPageNumber -ge $totalPage ]; then
+            getDomainRecords 1 $pageSz $rrKw $valueKw
+          else
+            getDomainRecords $((rtPageNumber + 1)) $pageSz $rrKw $valueKw
+          fi
+          ;;
+        p)
+          if [ $rtPageNumber -eq 1 ]; then
+            getDomainRecords $totalPage $pageSz $rrKw $valueKw
+          else
+            getDomainRecords $((rtPageNumber - 1)) $pageSz $rrKw $valueKw
+          fi
+          ;;
+        *)
+          log_warn "dns" "无效的输入，请重新选择"
+          ;;
       esac
     done
   else
@@ -292,31 +292,31 @@ function getDomainRecords() {
 
 # 主程序处理逻辑
 case $dns_operate in
-0)
-  acl
-  ;;
-1)
-  addRecord
-  ;;
-2)
-  getRecords
-  ;;
-3)
-  deleteRecords
-  ;;
-4)
-  deleteThenAddRecord
-  ;;
-5)
-  log_info "dns" "分页查询域名的解析记录"
-  readDomainName
-  readPageNumber
-  readPageSize
-  readRrKeyWord
-  readValueKeyWord
-  getDomainRecords $pageNumber $pageSize $rrKeyWord $valueKeyWord
-  ;;
-*)
-  log_info "dns" "没有选择任何操作，退出"
-  ;;
+  0)
+    acl
+    ;;
+  1)
+    addRecord
+    ;;
+  2)
+    getRecords
+    ;;
+  3)
+    deleteRecords
+    ;;
+  4)
+    deleteThenAddRecord
+    ;;
+  5)
+    log_info "dns" "分页查询域名的解析记录"
+    readDomainName
+    readPageNumber
+    readPageSize
+    readRrKeyWord
+    readValueKeyWord
+    getDomainRecords $pageNumber $pageSize $rrKeyWord $valueKeyWord
+    ;;
+  *)
+    log_info "dns" "没有选择任何操作，退出"
+    ;;
 esac
