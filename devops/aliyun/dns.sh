@@ -64,7 +64,7 @@ function dnsapi() {
     --arg pageSize "$pageSize" \
     --arg rrKeyWord "$rrKeyWord" \
     --arg valueKeyWord "$valueKeyWord" \
-    '{domainName:$domainName, rr:$rr, type:$type, value:$value, pageNumber:($pageNumber|tonumber), pageSize:($pageSize|tonumber), rrKeyWord:$rrKeyWord, valueKeyWord:$valueKeyWord}')
+    '{domainName:$domainName, rr:$rr, type:$type, value:$value, pageNumber:(if $pageNumber=="" then null else ($pageNumber|tonumber) end), pageSize:(if $pageSize=="" then null else ($pageSize|tonumber) end), rrKeyWord:$rrKeyWord, valueKeyWord:$valueKeyWord}')
 
   result=$(curl -sSL --connect-timeout 3 -X POST $api_root_uri$request_url \
     --header "$access_token_key: $access_token_value" \
