@@ -54,7 +54,17 @@ function dnsapi() {
   local api_root_uri="$DNSAPI_ROOT_URI"
   local access_token_key="$DNSAPI_ACCESS_TOKEN_KEY"
   local access_token_value="$DNSAPI_ACCESS_TOKEN_VALUE"
-  local json_data='{"domainName":"'$domainName'","rr":"'$rr'","type":"'$type'","value":"'$value'", "pageNumber":"'$pageNumber'", "pageSize":"'$pageSize'", "rrKeyWord":"'$rrKeyWord'", "valueKeyWord":"'$valueKeyWord'"}'
+  # local json_data='{"domainName":"'$domainName'","rr":"'$rr'","type":"'$type'","value":"'$value'", "pageNumber":"'$pageNumber'", "pageSize":"'$pageSize'", "rrKeyWord":"'$rrKeyWord'", "valueKeyWord":"'$valueKeyWord'"}'
+  local json_data=$(jq -n \
+    --arg domainName "$domainName" \
+    --arg rr "$rr" \
+    --arg type "$type" \
+    --arg value "$value" \
+    --arg pageNumber "$pageNumber" \
+    --arg pageSize "$pageSize" \
+    --arg rrKeyWord "$rrKeyWord" \
+    --arg valueKeyWord "$valueKeyWord" \
+    '{domainName:$domainName, rr:$rr, type:$type, value:$value, pageNumber:($pageNumber|tonumber), pageSize:($pageSize|tonumber), rrKeyWord:$rrKeyWord, valueKeyWord:$valueKeyWord}')
 
   result=$(curl -sSL --connect-timeout 3 -X POST $api_root_uri$request_url \
     --header "$access_token_key: $access_token_value" \
