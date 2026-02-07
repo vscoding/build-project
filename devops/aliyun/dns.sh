@@ -257,7 +257,14 @@ function getDomainRecords() {
     local data=$(echo $result | jq -r ".data")
     local totalCount=$(echo $result | jq -r ".totalCount")
     log_info "dns" "分页查询域名的解析记录 domainName=$domainName pageNumber=$1 pageSize=$2 totalCount=$totalCount"
-    echo $data | jq -c '.[]'
+    # echo $data | jq -c '.[]'
+    function fmt_echo() {
+      echo "$data" | jq -r '
+        .[] |
+        "\(.type) | \(if .rr=="@" then .domainName else (.rr + "." + .domainName) end) | \(.value) | \(.ttl) | \(.status)"
+      '
+    }
+    fmt_echo
   }
 
   if [ "$code" == "200" ] || [ "$code" == "" ]; then
