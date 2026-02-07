@@ -246,7 +246,8 @@ function getDomainRecords() {
   local rrKw=$3
   local valueKw=$4
 
-  log_info "dns" "分页查询域名的解析记录 domainName=$domainName pageNumber=$pageNum pageSize=$pageSz"
+  log_info "dns" "分页查询域名的解析记录"
+  log_info "dns" "domainName=$domainName pageNumber=$pageNum pageSize=$pageSz"
   dnsapi $domainName "" "" "" "/getDomainRecords" $pageNum $pageSz $rrKw $valueKw
 
   local code=$(echo $result | jq -r ".code")
@@ -256,7 +257,8 @@ function getDomainRecords() {
     sleep 1
     local data=$(echo $result | jq -r ".data")
     local totalCount=$(echo $result | jq -r ".totalCount")
-    log_info "dns" "分页查询域名的解析记录 domainName=$domainName pageNumber=$1 pageSize=$2 totalCount=$totalCount"
+    log_info "dns" "分页查询域名的解析记录"
+    log_info "dns" "domainName=$domainName pageNumber=$pageNum pageSize=$pageSz"
     # echo $data | jq -c '.[]'
     function fmt_echo() {
       echo "$data" | jq -r '
