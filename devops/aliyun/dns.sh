@@ -5,7 +5,7 @@ source <(curl -sSL https://dev.kubectl.net/func/log.sh)
 # 检查必要的环境变量
 check_required_vars() {
   local missing=0
-  for var in "DNSAPI_ROOT_URI" "DNSAPI_ACCESS_TOKEN_KEY" "DNSAPI_ACCESS_TOKEN_VALUE"; do
+  for var in "DNSAPI_ROOT_URI" "DNSAPI_ACCESS_TOKEN_VALUE"; do
     if [ -z "${!var}" ]; then
       log_error "dns" "$var 未设置"
       missing=1
@@ -52,7 +52,6 @@ function dnsapi() {
   local valueKeyWord=$9
 
   local api_root_uri="$DNSAPI_ROOT_URI"
-  local access_token_key="$DNSAPI_ACCESS_TOKEN_KEY"
   local access_token_value="$DNSAPI_ACCESS_TOKEN_VALUE"
   # local json_data='{"domainName":"'$domainName'","rr":"'$rr'","type":"'$type'","value":"'$value'", "pageNumber":"'$pageNumber'", "pageSize":"'$pageSize'", "rrKeyWord":"'$rrKeyWord'", "valueKeyWord":"'$valueKeyWord'"}'
   local json_data=$(jq -n \
@@ -67,7 +66,7 @@ function dnsapi() {
     '{domainName:$domainName, rr:$rr, type:$type, value:$value, pageNumber:(if $pageNumber=="" then null else ($pageNumber|tonumber) end), pageSize:(if $pageSize=="" then null else ($pageSize|tonumber) end), rrKeyWord:$rrKeyWord, valueKeyWord:$valueKeyWord}')
 
   result=$(curl -sSL --connect-timeout 3 -X POST $api_root_uri$request_url \
-    --header "$access_token_key: $access_token_value" \
+    --header "Authorization: Bearer $access_token_value" \
     --header 'Content-Type: application/json' \
     --data "$json_data")
 }
