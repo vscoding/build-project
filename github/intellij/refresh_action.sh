@@ -19,12 +19,25 @@ if [ -z "$GITHUB_ACTIONS_CACHE_DIR" ]; then
   exit 1
 fi
 
-# read action from input ,e.g. owner/repo@ref
-read -r -p "Enter the GitHub action (e.g. owner/repo@ref): " action_input
+function validate_input() {
+  local input="$1"
+  # validate
+  if [[ ! "$input" =~ ^[^/]+/[^/@]+@.+$ ]]; then
+    log_error "input" "Invalid format. Expected owner/repo@ref"
+    return 1
+  fi
+  return 0
+}
 
-# validate
-if [[ ! "$action_input" =~ ^[^/]+/[^/@]+@.+$ ]]; then
-  log_error "input" "Invalid format. Expected owner/repo@ref"
+action_input=$1
+
+if [ -n "$action_input" ] || ! validate_input "$action_input"; then
+  # read action from input ,e.g. owner/repo@ref
+  read -r -p "Enter the GitHub action (e.g. owner/repo@ref): " action_input
+fi
+
+if [ -z "$action_input" ] || ! validate_input "$action_input"; then
+  log_error "input" "Invalid input. Exiting."
   exit 1
 fi
 
