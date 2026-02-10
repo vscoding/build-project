@@ -21,9 +21,12 @@ fi
 
 function validate_input() {
   local input="$1"
+  local quiet="${2:-}"
   # validate
   if [[ ! "$input" =~ ^[^/]+/[^/@]+@.+$ ]]; then
-    log_error "input" "Invalid format. Expected owner/repo@ref"
+    if [ "$quiet" != "quiet" ]; then
+      log_error "input" "Invalid format. Expected owner/repo@ref"
+    fi
     return 1
   fi
   return 0
@@ -31,12 +34,12 @@ function validate_input() {
 
 action_input=$1
 
-if [ -n "$action_input" ] && ! validate_input "$action_input"; then
+if ! validate_input "$action_input" "quiet"; then
   # read action from input ,e.g. owner/repo@ref
   read -r -p "Enter the GitHub action (e.g. owner/repo@ref): " action_input
 fi
 
-if [ -z "$action_input" ] || ! validate_input "$action_input"; then
+if ! validate_input "$action_input"; then
   log_error "input" "Invalid input. Exiting."
   exit 1
 fi
