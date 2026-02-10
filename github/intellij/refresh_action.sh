@@ -31,7 +31,7 @@ function validate_input() {
 
 action_input=$1
 
-if [ -n "$action_input" ] || ! validate_input "$action_input"; then
+if [ -n "$action_input" ] && ! validate_input "$action_input"; then
   # read action from input ,e.g. owner/repo@ref
   read -r -p "Enter the GitHub action (e.g. owner/repo@ref): " action_input
 fi
