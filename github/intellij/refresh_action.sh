@@ -46,6 +46,11 @@ action_url="https://raw.githubusercontent.com/$owner_repo/refs/tags/$ref/action.
 
 log_info "download" "Downloading action.yml from $action_url"
 
-HTTP_PROXY=${HTTP_PROXY:-} HTTPS_PROXY=${HTTPS_PROXY:-} curl -sSL -o "$action_dir/action.yml" "$action_url"
+curl_opts=""
+if [ -n "$HTTP_PROXY" ]; then
+  curl_opts="-x $HTTP_PROXY"
+fi
+log_info "command" "curl $curl_opts -fL \"$action_url\" -o \"$action_dir/action.yml\""
+curl $curl_opts -fL "$action_url" -o "$action_dir/action.yml"
 
 log_info "success" "Action refreshed successfully at $action_dir/action.yml"
