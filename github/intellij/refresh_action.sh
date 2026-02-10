@@ -11,7 +11,7 @@ if is_windows; then
   export MSYS_NO_PATHCONV=1
 fi
 
-#ls 'D:\jetbrains\idea.cache\system\github-actions\cache'
+#e.g. 'D:\jetbrains\idea.cache\system\github-actions\cache'
 
 GITHUB_ACTIONS_CACHE_DIR=${GITHUB_ACTIONS_CACHE_DIR:-}
 if [ -z "$GITHUB_ACTIONS_CACHE_DIR" ]; then
@@ -28,8 +28,8 @@ if [[ ! "$action_input" =~ ^[^/]+/[^/@]+@.+$ ]]; then
   exit 1
 fi
 
-# clear old directory. GITHUB_ACTIONS_CACHE_DIR + owner/repo@ref -> owner/repo/ref
-action_dir="$GITHUB_ACTIONS_CACHE_DIR/${action_input//@//}"
+action_yml_dir=${action_input//@//}
+action_dir=$GITHUB_ACTIONS_CACHE_DIR/$action_yml_dir
 if [ -d "$action_dir" ]; then
   log_info "cache" "Clearing old cache at $action_dir"
   rm -rf "$action_dir"
