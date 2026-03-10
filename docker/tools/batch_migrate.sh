@@ -21,6 +21,7 @@ echo -e "\033[0;32mROOT_URI=$ROOT_URI\033[0m"
 source <(curl -sSL $ROOT_URI/func/log.sh)
 source <(curl -sSL $ROOT_URI/func/ostype.sh)
 source <(curl -sSL $ROOT_URI/func/command_exists.sh)
+source <(curl -sSL $ROOT_URI/docker/tools/compare_digest.sh)
 
 if is_windows; then
   log_info "build" "build in windows"
@@ -119,6 +120,17 @@ function migrate() {
         if [ "$test_mode" == "true" ]; then
           log_info "test_mode" "skip actual migration in test mode"
         else
+
+          # 加入 digest 检查，如果 from 和 to 的 digest 相同，则跳过迁移
+          if command_exists jq && command_exists skopeo && command_exists sha256sum; then
+            if compare_image_digest "$from" "$to" "$platform"; then
+              log_info "digest check" "digests are the same, skipping migration for $from → $to on $platform"
+              continue
+            else
+              log_info "digest check" "digests differ, proceeding with migration for $from → $to on $platform"
+            fi
+          fi
+
           bash <(curl -sSL https://dev.kubectl.net/docker/tools/migrate_p.sh) \
             -s "$from" \
             -t "$to" \
