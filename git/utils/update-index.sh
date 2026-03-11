@@ -17,7 +17,7 @@ log_info "chmod" "start make executable scan"
 
 curr_dir=$(pwd)
 log_info "chmod" "current directory: $curr_dir"
-read -p "chmod" "This script will scan all tracked files in git and make .sh files and shebang scripts executable. Do you want to continue? (y/n) " -n 1 -r
+read -r -n 1 -p "This script will scan all tracked files in git and make .sh files and shebang scripts executable. Do you want to continue? (y/n) " REPLY
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
   log_info "chmod" "aborted by user"
