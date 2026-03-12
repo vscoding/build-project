@@ -23,7 +23,7 @@ function prepare() {
 
   if [ -d $target_dir ]; then
     log_info "elasticsearch" "$target_dir is exist"
-    read -p "Do you want to delete it? [y/n]" answer
+    read -r -p "Do you want to delete it? [y/n]" answer
     if [ "$answer" == "y" ]; then
       log_warn "elasticsearch" "delete it rm -rf $target_dir"
       rm -rf $target_dir

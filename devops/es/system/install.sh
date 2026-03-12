@@ -47,7 +47,7 @@ log_warn "elasticsearch" "current_dir=$current_dir"
 log_warn "elasticsearch" "current_dir=$current_dir"
 log_warn "elasticsearch" "current_dir=$current_dir"
 
-read -p "Confirm install elasticsearch in this current directory? [y/n] :" answer
+read -r -p "Confirm install elasticsearch in this current directory? [y/n] :" answer
 if [ "$answer" != "y" ]; then
   log_info "elasticsearch" "exit"
   exit 0
@@ -71,9 +71,9 @@ function prepare_tar_gz() {
   detect_version_by_file
 
   if [ -z $version ]; then
-    read -p "Choose other version to install: [y/n] :" answer
+    read -r -p "Choose other version to install: [y/n] :" answer
     if [ "$answer" == "y" ]; then
-      read -p "Enter the version of elasticsearch you want to install: " version
+      read -r -p "Enter the version of elasticsearch you want to install: " version
       if [ -z $version ]; then
         version="8.16.0"
       fi
@@ -87,7 +87,7 @@ function prepare_tar_gz() {
   if [ -f "$file_name" ]; then
     log_info "elasticsearch" "$file_name is exist"
   else
-    read -p "Are you sure you want to download from the Internet? [y/n] :" download
+    read -r -p "Are you sure you want to download from the Internet? [y/n] :" download
     if [ "$download" != "y" ]; then
       log_info "elasticsearch" "exit"
       exit 0
@@ -118,7 +118,7 @@ function prepare_tar_gz() {
       log_warn "elasticsearch" "Are you sure you want to unzip again? It will delete the existing directory elasticsearch-$version/ and elasticsearch/ "
       log_warn "elasticsearch" "Are you sure you want to unzip again? It will delete the existing directory elasticsearch-$version/ and elasticsearch/ "
       log_warn "elasticsearch" "Are you sure you want to unzip again? It will delete the existing directory elasticsearch-$version/ and elasticsearch/ "
-      read -p "Are you sure you want to unzip again? [y/n] :" unzip
+      read -r -p "Are you sure you want to unzip again? [y/n] :" unzip
       if [ "$unzip" != "y" ]; then
         log_info "elasticsearch" "exit"
         exit 0
@@ -148,7 +148,7 @@ prepare_tar_gz
 
 function create_user() {
   log_info "elasticsearch" "create user"
-  read -p "Enter the user name you want to create (default is es) :" user_name
+  read -r -p "Enter the user name you want to create (default is es) :" user_name
 
   if [ -z $use_name ]; then
     user_name="es"
@@ -174,8 +174,8 @@ function prepare_es_env() {
 
   function set_jvm_options() {
     log_info "elasticsearch" "jvm.options"
-    read -p "Enter the jvm.options (-Xms) you want to set: (default: -Xms4g) :" jvm_options_xms
-    read -p "Enter the jvm.options (-Xmx) you want to set: (default: -Xmx4g) :" jvm_options_xmx
+    read -r -p "Enter the jvm.options (-Xms) you want to set: (default: -Xms4g) :" jvm_options_xms
+    read -r -p "Enter the jvm.options (-Xmx) you want to set: (default: -Xmx4g) :" jvm_options_xmx
 
     if [ -z $jvm_options_xms ]; then
       jvm_options_xms="-Xms4g"
@@ -215,7 +215,7 @@ function prepare_es_env() {
       cp elasticsearch/config/elasticsearch.yml $backup_file
     fi
 
-    read -p "Enter the cluster name you want to set: (default: es-cluster) :" cluster_name
+    read -r -p "Enter the cluster name you want to set: (default: es-cluster) :" cluster_name
     if [ -z $cluster_name ]; then
       cluster_name="es-cluster"
       log_info "elasticsearch" "default cluster_name=$cluster_name"
@@ -224,7 +224,7 @@ function prepare_es_env() {
     log_info "elasticsearch" "Enter the node name you want to set: [0] node-0"
     log_info "elasticsearch" "Enter the node name you want to set: [1] node-1"
     log_info "elasticsearch" "Enter the node name you want to set: [2] node-2"
-    read -p "Enter the node name you want to set: (default: [0] node-0) :" node_name
+    read -r -p "Enter the node name you want to set: (default: [0] node-0) :" node_name
     case $node_name in
     0 | node-0)
       node_name="node-0"
@@ -241,7 +241,7 @@ function prepare_es_env() {
       ;;
     esac
 
-    read -p "Confirm xpack.security.transport.ssl.enabled? [y/n] :" xpack_security_transport_ssl_enabled
+    read -r -p "Confirm xpack.security.transport.ssl.enabled? [y/n] :" xpack_security_transport_ssl_enabled
 
     function try_use_local_cert() {
       if [ -f "cert.tar.gz" ]; then
@@ -263,7 +263,7 @@ function prepare_es_env() {
       xpack_security_transport_ssl_enabled="false"
     fi
 
-    read -p "Input basic path for data & log: (default: /data/persistence/elasticsearch) :" path_data_logs
+    read -r -p "Input basic path for data & log: (default: /data/persistence/elasticsearch) :" path_data_logs
     if [ -z $path_data_logs ]; then
       path_data_logs="/data/persistence/elasticsearch"
       log_info "elasticsearch" "default path_data_logs=$path_data_logs"
@@ -273,7 +273,7 @@ function prepare_es_env() {
       log_warn "elasticsearch" "$path_data_logs is exist, it can be deleted.All data will be lost!!!"
       log_warn "elasticsearch" "$path_data_logs is exist, it can be deleted.All data will be lost!!!"
       log_warn "elasticsearch" "$path_data_logs is exist, it can be deleted.All data will be lost!!!"
-      read -p "Do you want to delete it? [y/n] :" answer
+      read -r -p "Do you want to delete it? [y/n] :" answer
       if [ $answer == "y" ]; then
         log_warn "elasticsearch" "clean it rm -rf $path_data_logs"
         rm -rf $path_data_logs

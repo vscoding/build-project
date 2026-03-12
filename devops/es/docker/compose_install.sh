@@ -60,7 +60,7 @@ log_warn "elasticsearch" "current_dir=$current_dir"
 log_warn "elasticsearch" "current_dir=$current_dir"
 log_warn "elasticsearch" "current_dir=$current_dir"
 
-read -p "Confirm prepare elasticsearch's files in $current_dir [y/n]" answer
+read -r -p "Confirm prepare elasticsearch's files in $current_dir [y/n]" answer
 
 if [ "$answer" == "y" ]; then
   answer=""
@@ -96,7 +96,7 @@ EOF
 }
 
 if [ -f "docker-compose.yml" ]; then
-  read -p "Do you want to rewrite it? [y/n]" answer
+  read -r -p "Do you want to rewrite it? [y/n]" answer
   if [ "$answer" == "y" ]; then
     answer=""
     log_warn "elasticsearch" "rewrite docker-compose.yml"
@@ -110,7 +110,7 @@ else
 fi
 
 function write_config_file() {
-  read -p "Confirm xpack.security.transport.ssl.enabled? [y/n]" answer
+  read -r -p "Confirm xpack.security.transport.ssl.enabled? [y/n]" answer
   transport_ssl=""
   if [ "$answer" == "y" ]; then
     answer=""
@@ -124,7 +124,7 @@ function write_config_file() {
     echo "node-0 [0]"
     echo "node-1 [1]"
     echo "node-2 [2]"
-    read -p "Choose node name [0/1/2]" answer
+    read -r -p "Choose node name [0/1/2]" answer
     case $answer in
     0)
       node_name="node-0"
@@ -191,7 +191,7 @@ if [ -d "conf" ] && [ -f "conf/elasticsearch.yml" ]; then
   log_warn "elasticsearch" "Do you want to delete config file? Will lost config data!!!"
   log_warn "elasticsearch" "Do you want to delete config file? Will lost config data!!!"
 
-  read -p "Do you want to delete config file? [y/n]" answer
+  read -r -p "Do you want to delete config file? [y/n]" answer
 
   if [ "$answer" == "y" ]; then
     answer=""
@@ -219,7 +219,7 @@ if [ -d "data" ] || [ -d "logs" ] || [ -d "plugins" ]; then
   log_warn "elasticsearch" "Do you want to delete them? Will lost all data!!!"
   log_warn "elasticsearch" "Do you want to delete them? Will lost all data!!!"
   log_warn "elasticsearch" "Do you want to delete them? Will lost all data!!!"
-  read -p "Do you want to delete them ?[y/n]" answer
+  read -r -p "Do you want to delete them ?[y/n]" answer
   if [ "$answer" == "y" ]; then
     answer=""
     log_warn "elasticsearch" "delete data logs plugins"

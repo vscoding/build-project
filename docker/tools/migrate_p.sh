@@ -136,7 +136,7 @@ function migrate() {
       fi
     else
       if ! docker_image_exists "$image_name_tag"; then
-        read -p "Image $image_name_tag not found, do you want to pull it? [default: y] (y/n): " answer
+        read -r -p "Image $image_name_tag not found, do you want to pull it? [default: y] (y/n): " answer
         if [[ -z "$answer" ]]; then
           answer="y"
         fi

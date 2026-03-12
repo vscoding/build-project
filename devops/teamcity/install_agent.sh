@@ -35,7 +35,7 @@ function install_teamcity_agent() {
 
   function edit_properties() {
 
-    read -p "Enter the teamcity agent name. default is $(hostname):" agent_name
+    read -r -p "Enter the teamcity agent name. default is $(hostname):" agent_name
     if [ -z $agent_name ]; then
       log_warn "teamcity" "teamcity agent name is empty. use $(hostname)"
       agent_name=$(hostname)
@@ -134,7 +134,7 @@ EOF
   log_warn "teamcity" "try create teamcity-agent systemd service"
   log_warn "teamcity" "try create teamcity-agent systemd service"
 
-  read -p "Do you want create teamcity-agent systemd service? [y/n] (default n): " create_systemd
+  read -r -p "Do you want create teamcity-agent systemd service? [y/n] (default n): " create_systemd
   if [ -z $create_systemd ]; then
     create_systemd="n"
   fi
@@ -144,7 +144,7 @@ EOF
     systemctl daemon-reload
   fi
 
-  read -p "Do you want to creat start.sh and stop.sh[y/n] (default n): " create_start_stop
+  read -r -p "Do you want to creat start.sh and stop.sh[y/n] (default n): " create_start_stop
   if [ -z $create_start_stop ]; then
     create_start_stop="n"
   fi
@@ -202,7 +202,7 @@ EOF
 install_teamcity_agent
 
 function start_agent() {
-  read -p "Do you want to start the agent? [y/n]: " start_agent
+  read -r -p "Do you want to start the agent? [y/n]: " start_agent
   if [ -z $start_agent ]; then
     log_error "teamcity" "start agent is empty. use n"
     start_agent="n"

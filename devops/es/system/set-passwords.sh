@@ -5,7 +5,7 @@
 
 source <(curl -sSL $ROOT_URI/func/log.sh)
 
-read -p "input es user: (default is es) :" es_user
+read -r -p "input es user: (default is es) :" es_user
 # shellcheck disable=SC2086
 if [ -z $es_user ]; then
   es_user="es"
@@ -25,7 +25,7 @@ else
   log_info "elasticsearch" "bin/elasticsearch-setup-passwords is exist"
 
   log_info "elasticsearch" "Switching to user $es_user"
-  read -p "input es password: " es_password
+  read -r -p "input es password: " es_password
 
   if [ -z $es_password ]; then
     log_error "elasticsearch" "es_password is empty"

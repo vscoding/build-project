@@ -56,7 +56,7 @@ if image_exists "$from_image"; then
     docker_pull "$from_image"
   else
     # 判断是否要再次pull
-    read -p "Image $from_image already exists, do you want to pull it again?[default: y] (y/n) :" answer
+    read -r -p "Image $from_image already exists, do you want to pull it again?[default: y] (y/n) :" answer
     if [ -z "$answer" ]; then
       answer="y"
     fi

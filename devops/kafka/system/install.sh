@@ -27,7 +27,7 @@ log_warn "kafka" "current_dir=$current_dir"
 log_warn "kafka" "current_dir=$current_dir"
 log_warn "kafka" "current_dir=$current_dir"
 
-read -p "Confirm install kafka in this current directory? [y/n] :" answer
+read -r -p "Confirm install kafka in this current directory? [y/n] :" answer
 if [ "$answer" != "y" ]; then
   log_info "kafka" "exit"
   exit 0
@@ -55,11 +55,11 @@ function prepare_tgz() {
 
   if [ -z "$scala_version" ] || [ -z "$kafka_version" ]; then
     log_warn "kafka" "kafka_version or scala_version is empty"
-    read -p "Choose other kafka_full_version to install: [y/n] (default n):" answer
+    read -r -p "Choose other kafka_full_version to install: [y/n] (default n):" answer
     if [ "$answer" == "y" ]; then
       # read scala_version kafka_version
-      read -p "Enter the scala_version you want to set: " scala_version
-      read -p "Enter the kafka_version you want to set: " kafka_version
+      read -r -p "Enter the scala_version you want to set: " scala_version
+      read -r -p "Enter the kafka_version you want to set: " kafka_version
       if [ -z $scala_version ]; then
         scala_version="2.13"
         log_info "kafka" "default scala_version=2.13"
@@ -84,7 +84,7 @@ function prepare_tgz() {
   if [ -f "$file_name" ]; then
     log_info "kafka" "kafka tgz file exists"
   else
-    read -p "kafka tgz file not exists, download it? [y/n] (default n):" answer
+    read -r -p "kafka tgz file not exists, download it? [y/n] (default n):" answer
     if [ "$answer" == "y" ]; then
       local url="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/$kafka_version/kafka_$scala_version-$kafka_version.tgz"
       log_info "kafka" "wget $url"
@@ -113,7 +113,7 @@ function prepare_tgz() {
       log_warn "kafka" "Are you sure to delete it? It will delete all data in it."
       log_warn "kafka" "Are you sure to delete it? It will delete all data in it."
       log_warn "kafka" "Are you sure to delete it? It will delete all data in it."
-      read -p "Are you sure to delete it? [y/n] (default n):" answer
+      read -r -p "Are you sure to delete it? [y/n] (default n):" answer
       if [ "$answer" == "y" ]; then
         log_warn "kafka" "delete kafka_$scala_version-$kafka_version or kafka directory"
         log_warn "kafka" "rm -rf kafka_$scala_version-$kafka_version"
@@ -157,7 +157,7 @@ function config_properties() {
 
   # read kafka cluster name
   log_info "kafka" "Enter the cluster name you want to set: [e.g. kafka-cluster]"
-  read -p "Enter the cluster name you want to set (default kafka-cluster):" cluster_name
+  read -r -p "Enter the cluster name you want to set (default kafka-cluster):" cluster_name
   if [ -z $cluster_name ]; then
     cluster_name="kafka-cluster"
     log_info "kafka" "default cluster_name=kafka-cluster"
@@ -178,7 +178,7 @@ function config_properties() {
 
     function read_node0_ip() {
       log_info "kafka" "Enter the node-0 ip you want to set"
-      read -p "Enter the node-0 ip you want to set: " node_0_ip
+      read -r -p "Enter the node-0 ip you want to set: " node_0_ip
       if validate_ipv4 $node_0_ip; then
         log_info "kafka" "node-0 ip=$node_0_ip"
       else
@@ -189,7 +189,7 @@ function config_properties() {
 
     function read_node1_ip() {
       log_info "kafka" "Enter the node-1 ip you want to set"
-      read -p "Enter the node-1 ip you want to set: " node_1_ip
+      read -r -p "Enter the node-1 ip you want to set: " node_1_ip
       if validate_ipv4 $node_1_ip; then
         log_info "kafka" "node-1 ip=$node_1_ip"
       else
@@ -200,7 +200,7 @@ function config_properties() {
 
     function read_node2_ip() {
       log_info "kafka" "Enter the node-2 ip you want to set"
-      read -p "Enter the node-2 ip you want to set: " node_2_ip
+      read -r -p "Enter the node-2 ip you want to set: " node_2_ip
       if validate_ipv4 $node_2_ip; then
         log_info "kafka" "node-2 ip=$node_2_ip"
       else
@@ -225,7 +225,7 @@ function config_properties() {
   }
 
   function read_broker_id() {
-    read -p "Enter the broker.id  you want to set [0/1/2] :" broker_id
+    read -r -p "Enter the broker.id  you want to set [0/1/2] :" broker_id
     case $broker_id in
     0)
       log_info "kafka" "broker.id=0"
@@ -250,7 +250,7 @@ function config_properties() {
 
   function prepare_logs_dir() {
     log_info "kafka" "Enter the log.dirs you want to set: [e.g. /tmp/kafka-logs]"
-    read -p "Enter the log.dirs you want to set: (default /data/persistence/kafka)" log_dirs
+    read -r -p "Enter the log.dirs you want to set: (default /data/persistence/kafka)" log_dirs
     if [ -z $log_dirs ]; then
       log_dirs="/data/persistence/kafka"
     fi
@@ -260,7 +260,7 @@ function config_properties() {
       log_warn "kafka" "Are you sure to delete it? It will delete all data in it."
       log_warn "kafka" "Are you sure to delete it? It will delete all data in it."
       log_warn "kafka" "Are you sure to delete it? It will delete all data in it."
-      read -p "Are you sure to delete it? [y/n] :" answer
+      read -r -p "Are you sure to delete it? [y/n] :" answer
       if [ "$answer" == "y" ]; then
         log_warn "kafka" "rm -rf $log_dirs"
         rm -rf $log_dirs
@@ -422,7 +422,7 @@ SHELL_FOLDER=\$(cd "\$(dirname "\$0")" && pwd)
 cd "\$SHELL_FOLDER"
 
 function read_uuid(){
-  read -p "Input uuid :" uuid
+  read -r -p "Input uuid :" uuid
   if [ -z \$uuid ]; then
     echo "uuid is empty,retry"
     read_uuid
@@ -491,9 +491,9 @@ config_properties
 
 function format_kafka_logs_dir() {
   log_info "kafka" "format kafka logs dir"
-  read -p "Are you sure to format kafka logs dir? [y/n] (default n):" answer
+  read -r -p "Are you sure to format kafka logs dir? [y/n] (default n):" answer
   if [ "$answer" == "y" ]; then
-    read -p "Are you sure generate random-uuid? [y/n] (default n):" answer
+    read -r -p "Are you sure generate random-uuid? [y/n] (default n):" answer
     if [ "$answer" == "y" ]; then
       log_info "kafka" "generate random-uuid"
 
@@ -509,7 +509,7 @@ function format_kafka_logs_dir() {
       kafka/bin/kafka-storage.sh format -t $uuid -c $kraft_server_properties
 
     else
-      read -p "Enter the uuid you want to set: " uuid
+      read -r -p "Enter the uuid you want to set: " uuid
       if [ -z $uuid ]; then
         log_warn "kafka" "uuid is empty"
         exit 1
@@ -532,7 +532,7 @@ function create_systemd() {
   function read_java_home() {
     if [ -z $JAVA_HOME ]; then
       log_warn "kafka" "JAVA_HOME is empty"
-      read -p "Enter the JAVA_HOME you want to set: " JAVA_HOME
+      read -r -p "Enter the JAVA_HOME you want to set: " JAVA_HOME
       if [ -z $JAVA_HOME ]; then
         log_warn "kafka" "JAVA_HOME is empty"
         read_java_home
@@ -553,7 +553,7 @@ function create_systemd() {
   read_java_home
 
   function read_java_options() {
-    read -p "Enter the JAVA_OPTS you want to set. [default -Xmx2G -Xms2G] :" JAVA_OPTS
+    read -r -p "Enter the JAVA_OPTS you want to set. [default -Xmx2G -Xms2G] :" JAVA_OPTS
     if [ -z $JAVA_OPTS ]; then
       JAVA_OPTS="-Xmx2G -Xms2G"
       log_info "kafka" "default JAVA_OPTS=$JAVA_OPTS"

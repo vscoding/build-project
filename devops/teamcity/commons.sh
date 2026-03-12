@@ -25,9 +25,9 @@ function prepare() {
     log_info "prepare" "JAVA_HOME is $JAVA_HOME"
 
     # sure use this JAVA_HOME
-    read -p "Enter y to continue use JAVA_HOME $JAVA_HOME :" confirm
+    read -r -p "Enter y to continue use JAVA_HOME $JAVA_HOME :" confirm
     if [ "$confirm" != "y" ]; then
-      read -p "Enter the JAVA_HOME path: " JAVA_HOME
+      read -r -p "Enter the JAVA_HOME path: " JAVA_HOME
       if [ -z $JAVA_HOME ]; then
         log_error "prepare" "JAVA_HOME is empty"
         return 1
@@ -82,7 +82,7 @@ function remove_systemd() {
 
 function download_teamcity_agent() {
   function read_download_server() {
-    read -p "Enter the teamcity server: " teamcity_server
+    read -r -p "Enter the teamcity server: " teamcity_server
     if [ -z $teamcity_server ]; then
       log_error "teamcity" "teamcity server is empty"
       read_download_server
@@ -93,7 +93,7 @@ function download_teamcity_agent() {
   read_download_server
 
   function read_install_path() {
-    read -p "Enter the teamcity agent install path (default is /opt/teamcity-agent) :" teamcity_agent_path
+    read -r -p "Enter the teamcity agent install path (default is /opt/teamcity-agent) :" teamcity_agent_path
     if [ -z $teamcity_agent_path ]; then
       teamcity_agent_path="/opt/teamcity-agent"
       log_info "teamcity" "use default teamcity agent install path: $teamcity_agent_path"
@@ -103,7 +103,7 @@ function download_teamcity_agent() {
   }
   read_install_path
 
-  read -p "Enter y to continue install teamcity agent in $teamcity_agent_path :" confirm
+  read -r -p "Enter y to continue install teamcity agent in $teamcity_agent_path :" confirm
   if [ "$confirm" != "y" ]; then
     log_error "teamcity" "exit install teamcity agent"
     return 1
@@ -113,7 +113,7 @@ function download_teamcity_agent() {
     log_warn "teamcity" "teamcity agent install path $teamcity_agent_path is exist"
     log_warn "teamcity" "teamcity agent maybe exist, try stop and remove"
 
-    read -p "Enter y to continue remove $teamcity_agent_path :" confirm
+    read -r -p "Enter y to continue remove $teamcity_agent_path :" confirm
     if [ "$confirm" != "y" ]; then
       log_warn "teamcity" "skip remove teamcity agent"
     else
@@ -133,7 +133,7 @@ function download_teamcity_agent() {
 
   if [ -f $teamcity_agent_path/buildAgent.zip ]; then
     # file exist ,re download ?
-    read -p "The file $teamcity_agent_path/buildAgent.zip already exists. Do you want to re-download it? [y/n]: " confirm
+    read -r -p "The file $teamcity_agent_path/buildAgent.zip already exists. Do you want to re-download it? [y/n]: " confirm
     if [ -z $confirm ]; then
       log_error "teamcity" "confirm is empty. use n"
       confirm="n"

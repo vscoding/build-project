@@ -6,7 +6,7 @@
 source <(curl -sSL $ROOT_URI/func/log.sh)
 current_dir=$(pwd)
 
-read -p "Confirm init liquibase in [$current_dir] (y/n)" confirm
+read -r -p "Confirm init liquibase in [$current_dir] (y/n)" confirm
 
 function init_liquibase() {
   log_warn "rm" "rm -rf db/"

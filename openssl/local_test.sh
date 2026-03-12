@@ -22,13 +22,13 @@ init() {
   log_info "INIT" "init ssl folder"
 
   # read ssl dir
-  read -p "Enter SSL directory (default: ssl): " input_ssl_dir
+  read -r -p "Enter SSL directory (default: ssl): " input_ssl_dir
   if [ -n "$input_ssl_dir" ]; then
     SSL_DIR="$input_ssl_dir"
   fi
 
   if [ -f "$SSL_DIR" ]; then
-    read -p "'$SSL_DIR' is a file, remove it? (default y) (y/n): " yn
+    read -r -p "'$SSL_DIR' is a file, remove it? (default y) (y/n): " yn
     if [ -z $yn ]; then
       yn="y"
     fi
@@ -49,7 +49,7 @@ init() {
   fi
 
   if [ -d "$SSL_DIR" ]; then
-    read -p "'$SSL_DIR' directory already exists, remove it? (default y) (y/n): " yn
+    read -r -p "'$SSL_DIR' directory already exists, remove it? (default y) (y/n): " yn
     if [ -z $yn ]; then
       yn="y"
     fi

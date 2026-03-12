@@ -32,7 +32,7 @@ show_menu() {
   log_info "input" "  (5) 分页查询域名的解析记录"
   log_info "input" "  (*) 退出 exit"
 
-  read -p "> 请输入你的选择: " dns_operate
+  read -r -p "> 请输入你的选择: " dns_operate
 }
 
 show_menu
@@ -77,7 +77,7 @@ function readDomainName() {
     return
   fi
 
-  read -p "请输入域名: " domainName
+  read -r -p "请输入域名: " domainName
   log_info "dns" "输入的域名为 $domainName"
 
   if [ -z "$domainName" ]; then
@@ -90,7 +90,7 @@ function readRr() {
   if [ -n "$rr" ]; then
     return
   fi
-  read -p "请输入主机记录(Resource Record): " rr
+  read -r -p "请输入主机记录(Resource Record): " rr
   log_info "dns" "输入的主机记录为 $rr"
 
   if [ -z "$rr" ]; then # 修复了变量引用
@@ -100,7 +100,7 @@ function readRr() {
 }
 
 function readType() {
-  read -p "请输入记录类型(默认为A): " type
+  read -r -p "请输入记录类型(默认为A): " type
   log_info "dns" "输入的记录类型为 $type"
 
   if [ -z "$type" ]; then # 修复了变量引用
@@ -110,7 +110,7 @@ function readType() {
 }
 
 function readValue() {
-  read -p "请输入记录值: " value
+  read -r -p "请输入记录值: " value
   log_info "dns" "输入的记录值为 $value"
 
   if [ -z "$value" ]; then # 修复了变量引用
@@ -120,7 +120,7 @@ function readValue() {
 }
 
 function readPageNumber() {
-  read -p "请输入 pageNumber(默认为1): " pageNumber
+  read -r -p "请输入 pageNumber(默认为1): " pageNumber
 
   if [ -z "$pageNumber" ]; then # 修复了变量引用
     pageNumber=1
@@ -137,7 +137,7 @@ function readPageNumber() {
 }
 
 function readPageSize() {
-  read -p "请输入 pageSize(默认为20): " pageSize
+  read -r -p "请输入 pageSize(默认为20): " pageSize
 
   if [ -z "$pageSize" ]; then # 修复了变量引用
     pageSize=20
@@ -154,17 +154,17 @@ function readPageSize() {
 }
 
 function readRrKeyWord() {
-  read -p "请输入主机记录(RR)关键字: " rrKeyWord
+  read -r -p "请输入主机记录(RR)关键字: " rrKeyWord
   log_info "dns" "输入的主机记录(RR)关键字为 $rrKeyWord"
 }
 
 function readValueKeyWord() {
-  read -p "请输入记录值(value)关键字: " valueKeyWord
+  read -r -p "请输入记录值(value)关键字: " valueKeyWord
   log_info "dns" "输入的记录值(value)关键字为 $valueKeyWord"
 }
 
 function quit() {
-  read -p "是否退出(q|Enter): " q
+  read -r -p "是否退出(q|Enter): " q
   if [ "$q" == "q" ] || [ -z "$q" ]; then # 修复了变量引用
     log_warn "dns" "退出分页查询域名的解析记录"
     exit 0
@@ -278,7 +278,7 @@ function getDomainRecords() {
     fi
 
     while true; do
-      read -p "查询上一页(p) 查询下一页(n|Enter) 退出(q): " pn
+      read -r -p "查询上一页(p) 查询下一页(n|Enter) 退出(q): " pn
       case "$pn" in
         q)
           log_warn "dns" "退出分页查询域名的解析记录"

@@ -27,7 +27,7 @@ function install_multi_teamcity_agent() {
   fi
 
   function read_num() {
-    read -p "Enter the number of teamcity agents to install: " agent_num
+    read -r -p "Enter the number of teamcity agents to install: " agent_num
     if [ -z $agent_num ]; then
       log_error "teamcity" "agent number is empty"
       read_num
@@ -52,7 +52,7 @@ function install_multi_teamcity_agent() {
 
   function unzip_and_edit_properties() {
     # read name
-    read -p "Enter the teamcity agent name. default is $(hostname):" agent_name
+    read -r -p "Enter the teamcity agent name. default is $(hostname):" agent_name
     if [ -z $agent_name ]; then
       log_warn "teamcity" "teamcity agent name is empty. use $(hostname)"
       agent_name=$(hostname)
@@ -155,7 +155,7 @@ EOF
   log_warn "teamcity" "try create teamcity-agent systemd service"
   log_warn "teamcity" "try create teamcity-agent systemd service"
 
-  read -p "Do you want create teamcity-agent systemd service? [y/n] (default n): " create_systemd
+  read -r -p "Do you want create teamcity-agent systemd service? [y/n] (default n): " create_systemd
   if [ -z $create_systemd ]; then
     create_systemd="n"
   fi
@@ -166,7 +166,7 @@ EOF
   fi
 
   # 创建 start.sh 和 stop.sh 脚本
-  read -p "Do you want to creat start.sh and stop.sh[y/n] (default n): " create_start_stop
+  read -r -p "Do you want to creat start.sh and stop.sh[y/n] (default n): " create_start_stop
   if [ -z $create_start_stop ]; then
     create_start_stop="n"
   fi
@@ -224,7 +224,7 @@ EOF
 install_multi_teamcity_agent
 
 function start_agents() {
-  read -p "Do you want to start the agents? [y/n]: " start_agents
+  read -r -p "Do you want to start the agents? [y/n]: " start_agents
   if [ -z $start_agents ]; then
     log_error "teamcity" "start agents is empty.use n"
     start_agents="n"
