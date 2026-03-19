@@ -18,7 +18,7 @@ if [ -z $PROXY_URL ]; then
 fi
 
 if [ -z $NO_PROXY_CONTENT ]; then
-  NO_PROXY_CONTENT=".local,localhost,127.0.0.1,192.168.*.*,10.0.0.0/8"
+  NO_PROXY_CONTENT=".local,localhost,127.0.0.*,192.168.*.*,10.0.0.0/8,172.16.0.0/12,169.254.0.0/16"
   log_info "NO_PROXY" "NO_PROXY_CONTENT is blank.default $NO_PROXY_CONTENT"
 fi
 
