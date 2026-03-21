@@ -7,6 +7,18 @@ export ROOT_URI=$ROOT_URI
 
 source <(curl -sSL $ROOT_URI/func/log.sh)
 
+ensure_key() {
+  local key_name=$1
+  local key_value=$2
+
+  if grep -q "$key_value" "$keys"; then
+    log_info "prepare" "$key_name already exists"
+  else
+    echo "$key_value" >>"$keys"
+    log_info "add" "$key_name added"
+  fi
+}
+
 if [ -f "$HOME/.ssh" ]; then
   log_error "prepare" "$HOME/.ssh is a file, not a directory"
   exit
@@ -26,17 +38,5 @@ if [ ! -f "keys" ]; then
   touch "$keys"
 fi
 
-# check if the keys already exist
-if grep -q "$ssh_ed25519" "$keys"; then
-  log_info "prepare" "ssh_ed25519 already exists"
-else
-  echo "$ssh_ed25519" >>"$keys"
-  log_info "add" "ssh_ed25519 added"
-fi
-
-if grep -q "$ecdsa_sha2_nistp521" "$keys"; then
-  log_info "prepare" "ecdsa_sha2_nistp521 already exists"
-else
-  echo "$ecdsa_sha2_nistp521" >>"$keys"
-  log_info "add" "ecdsa_sha2_nistp521 added"
-fi
+ensure_key "ssh_ed25519" "$ssh_ed25519"
+ensure_key "ecdsa_sha2_nistp521" "$ecdsa_sha2_nistp521"
