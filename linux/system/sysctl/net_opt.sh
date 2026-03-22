@@ -1,27 +1,34 @@
 #!/bin/bash
-# shellcheck disable=SC1090 disable=SC2086 disable=SC2155 disable=SC2128 disable=SC2028
-[ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
-export ROOT_URI=$ROOT_URI
-# ROOT_URI=https://dev.kubectl.net
+# shellcheck disable=SC1090
+set -euo pipefail
 
-source <(curl -sSL $ROOT_URI/func/log.sh)
+if [[ -z "${ROOT_URI:-}" ]]; then
+  source <(curl -fsSL "https://dev.kubectl.org/init")
+fi
+export ROOT_URI="${ROOT_URI:-}"
+
+source <(curl -fsSL "${ROOT_URI}/func/log.sh")
+
+SYSCTL_CONF="/etc/sysctl.conf"
+BLOCK_START="# OPTIMIZE NETWORK START"
+BLOCK_END="# OPTIMIZE NETWORK END"
 
 log_info "optimize" "network"
 
-if [ ! -f "/etc/sysctl.conf" ]; then
+if [[ ! -f "${SYSCTL_CONF}" ]]; then
   log_error "optimize" "sysctl.conf not found"
-  exit
+  exit 1
 fi
 
-function try_clear() {
-  log_info "optimize" "try clear old"
-  sed -i '/^# OPTIMIZE NETWORK START$/,/^# OPTIMIZE NETWORK END$/d' /etc/sysctl.conf
+clear_old_network_config() {
+  log_info "optimize" "clear old network config"
+  sed -i "/^${BLOCK_START}$/,/^${BLOCK_END}$/d" "${SYSCTL_CONF}"
 }
 
-function write_sysctl_conf() {
-  log_info "optimize" "write sysctl conf"
-  cat >>/etc/sysctl.conf <<EOF
-# OPTIMIZE NETWORK START
+write_network_config() {
+  log_info "optimize" "write network config"
+  cat >>"${SYSCTL_CONF}" <<EOF
+${BLOCK_START}
 
 # Enable ip forward
 net.ipv4.ip_forward = 1
@@ -55,9 +62,6 @@ fs.file-max = 100000
 # Enable TCP SYN cookies
 net.ipv4.tcp_syncookies = 1
 
-# Enable fast recycling of TIME-WAIT sockets
-net.ipv4.tcp_tw_recycle = 1
-
 # Enable reuse of TIME-WAIT sockets for new connections
 net.ipv4.tcp_tw_reuse = 1
 
@@ -69,9 +73,9 @@ net.ipv4.tcp_keepalive_time = 600
 net.ipv4.tcp_keepalive_intvl = 60
 net.ipv4.tcp_keepalive_probes = 5
 
-# OPTIMIZE NETWORK END
+${BLOCK_END}
 EOF
 }
 
-try_clear
-write_sysctl_conf
+clear_old_network_config
+write_network_config
