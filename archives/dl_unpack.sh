@@ -3,13 +3,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-[ -z "${ROOT_URI:-}" ] && ROOT_URI="https://gitlab.com/iprt/shell-basic/-/raw/main/build-project"
+[ -z "${ROOT_URI:-}" ] && ROOT_URI="https://dev.kubectl.org"
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 
-declare -g download_url="" # 下载链接
-declare -g proxy=""        # 代理
-declare -g output_file=""  # 下载后的文件命名
-declare -g unpack_flag="false"  # 是否解压，true解压，false不解压
+declare -g download_url=""     # 下载链接
+declare -g proxy=""            # 代理
+declare -g output_file=""      # 下载后的文件命名
+declare -g unpack_flag="false" # 是否解压，true解压，false不解压
 
 function show_usage() {
   cat <<EOF
@@ -90,7 +90,7 @@ function unpack_archive() {
   log_info "unpack" "解压文件: $file"
 
   case "$file" in
-    *.tar.gz|*.tgz) tar -xzf "$file" ;;
+    *.tar.gz | *.tgz) tar -xzf "$file" ;;
     *.tar.bz2) tar -xjf "$file" ;;
     *.tar.xz) tar -xJf "$file" ;;
     *.zip) unzip -o "$file" ;;
