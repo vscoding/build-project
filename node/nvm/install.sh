@@ -47,7 +47,7 @@ download() {
 # -------------------------------
 before_clear() {
   log_info "before_clear" "remove old nvm and config"
-  rm -rf "$HOME/nvm" "$HOME/.nvm" "$HOME/.npmrc"
+  rm -rf "$HOME/nvm*" "$HOME/.nvm" "$HOME/.npmrc"
 }
 
 # -------------------------------
@@ -58,7 +58,8 @@ unzip_and_move() {
   tar -zxf "$download_target_file" -C "$HOME"
 
   log_info "move" "mv $HOME/nvm $HOME/.nvm"
-  mv "$HOME/nvm" "$HOME/.nvm"
+  # 解压后的文件是  nvm-版本号，移动到 .nvm
+  mv "$HOME/nvm-"* "$HOME/.nvm"
 }
 
 # -------------------------------
