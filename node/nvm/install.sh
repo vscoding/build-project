@@ -29,7 +29,7 @@ prepare
 download() {
   rm -f "$download_target_file"
 
-  curl -fsSL -X POST "https://mirrors.iproute.org/github" \
+  curl -fsSL -X POST "https://mirrors.iproute.org/github/archive" \
     -H "Content-Type: application/json" \
     -d "{\"repo\":\"nvm-sh/nvm\",\"tag\":\"$nvm_version\"}" \
     -o "$download_target_file"
