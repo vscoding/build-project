@@ -7,7 +7,7 @@ source <(curl -sSL "$ROOT_URI/func/log.sh")
 source <(curl -sSL "$ROOT_URI/func/command_exists.sh")
 
 # 允许外部指定版本，默认 v0.40.1
-nvm_version="${NVM_VERSION:-v0.40.1}"
+nvm_version="${NVM_VERSION:-v0.40.4}"
 download_target_file="/tmp/nvm_$nvm_version.tar.gz"
 
 log_info "install" "start install nvm by root user, version=$nvm_version"
@@ -29,9 +29,12 @@ prepare
 download() {
   rm -f "$download_target_file"
 
-  curl -fsSL "https://code.kubectl.net/devops/nvm/archive/$nvm_version.tar.gz" -o "$download_target_file"
+  curl -fsSL -X POST "https://mirrors.iproute.org/github" \
+    -H "Content-Type: application/json" \
+    -d "{\"repo\":\"nvm-sh/nvm\",\"tag\":\"$nvm_version\"}" \
+    -o "$download_target_file"
 
-  if [[ -f "$download_target_file" ]]; then
+  if [[ -s "$download_target_file" ]]; then
     log_info "download" "download success"
   else
     log_error "download" "download failed"
