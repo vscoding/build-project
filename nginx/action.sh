@@ -39,12 +39,13 @@ function nginx_action() {
 
   function update_resources() {
     local resources=("$@")
+    local update_tpl=${UPDATE_SCRIPT_SHELL_PATH:-".migrate/update_tpl.sh"}
     for resource in "${resources[@]}"; do
       echo "updating resource: $resource"
-      if [ -f ".migrate/update_tpl.sh" ]; then
-        bash .migrate/update_tpl.sh -i "$resource"
+      if [ -f $update_tpl ]; then
+        bash "$update_tpl" -i "$resource"
       else
-        log_error "update" "update script .migrate/update_tpl.sh not found"
+        log_error "update" "update script not found. Please check the UPDATE_SCRIPT_SHELL_PATH environment variable or place the update script at .migrate/update_tpl.sh"
       fi
     done
   }
