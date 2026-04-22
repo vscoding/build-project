@@ -13,7 +13,7 @@ source <(curl -sSL "$ROOT_URI/func/command_exists.sh")
 # 全局变量初始化
 declare -g build_dir=""
 declare -g instance=""
-declare -gr BUILD_IMAGE="registry.cn-shanghai.aliyuncs.com/iproute/wrs-builder:2025.04.8412"
+declare -gr BUILD_IMAGE="registry.cn-shanghai.aliyuncs.com/iproute/wrs-builder:2026.04.8711"
 
 log "wsr build" ">>> writerside build start <<<"
 
@@ -44,28 +44,28 @@ EOF
 function parse_arguments() {
   while getopts ":d:i:h" opt; do
     case ${opt} in
-    d)
-      log_info "get opts" "build_dir: $OPTARG"
-      build_dir="$OPTARG"
-      ;;
-    i)
-      log_info "get opts" "instance: $OPTARG"
-      instance="$OPTARG"
-      ;;
-    h)
-      show_usage
-      exit 0
-      ;;
-    \?)
-      log_error "get opts" "Invalid option: -$OPTARG"
-      show_usage
-      exit 1
-      ;;
-    :)
-      log_error "get opts" "Option -$OPTARG requires an argument"
-      show_usage
-      exit 1
-      ;;
+      d)
+        log_info "get opts" "build_dir: $OPTARG"
+        build_dir="$OPTARG"
+        ;;
+      i)
+        log_info "get opts" "instance: $OPTARG"
+        instance="$OPTARG"
+        ;;
+      h)
+        show_usage
+        exit 0
+        ;;
+      \?)
+        log_error "get opts" "Invalid option: -$OPTARG"
+        show_usage
+        exit 1
+        ;;
+      :)
+        log_error "get opts" "Option -$OPTARG requires an argument"
+        show_usage
+        exit 1
+        ;;
     esac
   done
 }
