@@ -29,13 +29,13 @@ TARGET_FILE='/usr/local/bin/docker-compose'
 
 MIRROR_URL="https://mirrors.iproute.org/proxy_pass"
 POST_DATA="{\"src\":\"${DOCKER_COMPOSE_DOWNLOAD_URL}\"}"
-CURL_COMMAND="curl -fsSL -X POST \"${MIRROR_URL}\" -H \"Content-Type: application/json\" -d '${POST_DATA}' -o \"${TARGET_FILE}\""
+CURL_COMMAND="curl -fL -X POST \"${MIRROR_URL}\" -H \"Content-Type: application/json\" -d '${POST_DATA}' -o \"${TARGET_FILE}\""
 
 log_info "download" "url=${DOCKER_COMPOSE_DOWNLOAD_URL}"
 log_info "download" "target=${TARGET_FILE}"
 log_info "download" "${CURL_COMMAND}"
 
-if ! curl -fsSL -X POST "${MIRROR_URL}" \
+if ! curl -fL -X POST "${MIRROR_URL}" \
   -H "Content-Type: application/json" \
   -d "${POST_DATA}" \
   -o "${TARGET_FILE}"; then
