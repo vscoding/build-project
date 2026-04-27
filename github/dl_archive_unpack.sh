@@ -4,7 +4,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # 初始化 ROOT_URI
-[ -z "${ROOT_URI:-}" ] && ROOT_URI="https://gitlab.com/iprt/shell-basic/-/raw/main/build-project"
+[ -z "${ROOT_URI:-}" ] && source <(curl -sSL https://dev.kubectl.org/init)
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 
 declare -g repo=""
