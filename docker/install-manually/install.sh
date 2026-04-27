@@ -1,22 +1,98 @@
 #!/bin/bash
 # shellcheck disable=SC2164 disable=SC2086 disable=SC1090
-SHELL_FOLDER=$(cd "$(dirname "$0")" && pwd)
-cd "$SHELL_FOLDER"
-
 [ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
 
 source <(curl -sSL $ROOT_URI/func/log.sh)
+source <(curl -sSL $ROOT_URI/func/ostype.sh)
 
-arch=$1
-version=$2
-
-if [ -z $arch ]; then
-  arch="x86_64"
+if is_windows; then
+  log_error "validate" "Windows is not supported for docker installation."
+  exit 1
 fi
 
-if [ -z $version ]; then
-  version="28.0.4"
-fi
+arch="x86_64"
+version="28.0.4"
+
+function show_usage() {
+  cat <<EOF
+Usage: $0 [--platform|-p <platform>] [--version|-v <version>]
+
+Options:
+  -p, --platform  Docker platform architecture, default: x86_64
+  -v, --version   Docker version, default: 28.0.4
+  -h, --help      Show this help message
+EOF
+}
+
+function parse_arguments() {
+  local -a normalized_args=()
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --platform)
+        if [ $# -lt 2 ]; then
+          log_error "get opts" "Option --platform requires an argument"
+          show_usage
+          exit 1
+        fi
+        normalized_args+=("-p" "$2")
+        shift 2
+        ;;
+      --version)
+        if [ $# -lt 2 ]; then
+          log_error "get opts" "Option --version requires an argument"
+          show_usage
+          exit 1
+        fi
+        normalized_args+=("-v" "$2")
+        shift 2
+        ;;
+      --help)
+        normalized_args+=("-h")
+        shift
+        ;;
+      *)
+        normalized_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  set -- "${normalized_args[@]}"
+
+  while getopts ":p:v:h" opt; do
+    case "$opt" in
+      p)
+        arch="$OPTARG"
+        ;;
+      v)
+        version="$OPTARG"
+        ;;
+      h)
+        show_usage
+        exit 0
+        ;;
+      \?)
+        log_error "get opts" "Invalid option: -$OPTARG"
+        show_usage
+        exit 1
+        ;;
+      :)
+        log_error "get opts" "Option -$OPTARG requires an argument"
+        show_usage
+        exit 1
+        ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))
+
+  if [ $# -gt 0 ]; then
+    log_error "get opts" "Unexpected argument: $1"
+    show_usage
+    exit 1
+  fi
+}
 
 function download_and_move() {
   rm -rf docker-$version.tgz docker/
@@ -49,6 +125,7 @@ function config_systemd() {
   mkdir -p /etc/systemd/system/docker.service.d
 }
 
+parse_arguments "$@"
 cd /tmp
 groupadd docker
 download_and_move
