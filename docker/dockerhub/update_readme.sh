@@ -44,6 +44,7 @@ function update_dockerhub_readme() {
   local login_payload=""
   local api_payload=""
   local response_code=""
+  local curl_exit_code=0
   local -a curl_proxy_args=()
 
   while [[ $# -gt 0 ]]; do
@@ -225,20 +226,18 @@ function update_dockerhub_readme() {
     '{description: $desc, full_description: $full_desc}')
 
   log_info "dockerhub" "upload README to Docker Hub"
-  if ! response_code=$(curl "${curl_proxy_args[@]}" -sS -o /dev/null -w "%{http_code}" \
+  response_code=$(curl "${curl_proxy_args[@]}" -sS -o /dev/null -w "%{http_code}" \
     -X PATCH \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d "$api_payload" \
-    "https://hub.docker.com/v2/repositories/${docker_username}/${repo_name}/"); then
-    log_error "dockerhub" "failed to request Docker Hub repository update API"
-    return 1
-  fi
+    "https://hub.docker.com/v2/repositories/${docker_username}/${repo_name}/")
+  curl_exit_code=$?
 
-  if [[ "$response_code" == "200" ]]; then
+  if [[ "$response_code" =~ ^2[0-9][0-9]$ ]]; then
     log_info "dockerhub" "Docker Hub README updated successfully"
   else
-    log_error "dockerhub" "API returned HTTP $response_code, please check REPO_NAME and permissions"
+    log_error "dockerhub" "API returned HTTP $response_code, curl exit code $curl_exit_code, please check REPO_NAME and permissions"
     return 1
   fi
 }
