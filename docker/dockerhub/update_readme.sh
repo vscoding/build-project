@@ -45,6 +45,7 @@ function update_dockerhub_readme() {
   local api_payload=""
   local response_code=""
   local curl_exit_code=0
+  local curl_output="/dev/null"
   local -a curl_proxy_args=()
 
   while [[ $# -gt 0 ]]; do
@@ -179,6 +180,7 @@ function update_dockerhub_readme() {
   if is_windows; then
     log_info "build" "build in windows"
     export MSYS_NO_PATHCONV=1
+    curl_output="NUL"
   fi
 
   update_readme_require_value "DOCKERHUB_USERNAME" "$dockerhub_username" || return 1
@@ -227,7 +229,7 @@ function update_dockerhub_readme() {
 
   log_info "dockerhub" "upload README to Docker Hub"
   curl_exit_code=0
-  response_code=$(curl "${curl_proxy_args[@]}" -sS -o /dev/null -w "%{http_code}" \
+  response_code=$(curl "${curl_proxy_args[@]}" -sS -o "$curl_output" -w "%{http_code}" \
     -X PATCH \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
