@@ -8,7 +8,7 @@ Usage:
   update_dockerhub_readme [options]
 
 Options:
-  -u, --user <user>             Docker Hub username. Env: DOCKER_USER
+  -u, --username <username>     Docker Hub username. Env: DOCKER_USERNAME
   -p, --password <password>     Docker Hub password or personal access token. Env: DOCKER_PASSWORD
   -r, --repo <repo>             Docker Hub repository name. Env: REPO_NAME
   -f, --file <path>             README file path. Env: README_PATH. Default: ./README.md
@@ -32,7 +32,7 @@ function update_readme_require_value() {
 }
 
 function update_dockerhub_readme() {
-  local docker_user="${DOCKER_USER:-}"
+  local docker_username="${DOCKER_USERNAME:-}"
   local docker_password="${DOCKER_PASSWORD:-}"
   local repo_name="${REPO_NAME:-}"
   local readme_path="${README_PATH:-./README.md}"
@@ -48,17 +48,17 @@ function update_dockerhub_readme() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -u | --user)
+      -u | --username)
         if [[ $# -lt 2 ]]; then
           printf 'Option %s requires an argument\n' "$1" >&2
           usage
           return 1
         fi
-        docker_user="$2"
+        docker_username="$2"
         shift 2
         ;;
-      --user=*)
-        docker_user="${1#*=}"
+      --username=*)
+        docker_username="${1#*=}"
         shift
         ;;
       -p | --password)
@@ -180,7 +180,7 @@ function update_dockerhub_readme() {
     export MSYS_NO_PATHCONV=1
   fi
 
-  update_readme_require_value "DOCKER_USER" "$docker_user" || return 1
+  update_readme_require_value "DOCKER_USERNAME" "$docker_username" || return 1
   update_readme_require_value "DOCKER_PASSWORD" "$docker_password" || return 1
   update_readme_require_value "REPO_NAME" "$repo_name" || return 1
 
@@ -194,11 +194,11 @@ function update_dockerhub_readme() {
     return 1
   fi
 
-  log_info "dockerhub" "start update Docker Hub README for ${docker_user}/${repo_name}"
+  log_info "dockerhub" "start update Docker Hub README for ${docker_username}/${repo_name}"
 
   log_info "auth" "request Docker Hub token"
   login_payload=$(jq -n \
-    --arg identifier "$docker_user" \
+    --arg identifier "$docker_username" \
     --arg secret "$docker_password" \
     '{identifier: $identifier, secret: $secret}')
 
@@ -214,7 +214,7 @@ function update_dockerhub_readme() {
   token=$(printf "%s" "$token_response" | jq -r '.access_token // .token // empty')
 
   if [[ "$token" == "null" || -z "$token" ]]; then
-    log_error "auth" "login failed, please check DOCKER_USER and DOCKER_PASSWORD"
+    log_error "auth" "login failed, please check DOCKER_USERNAME and DOCKER_PASSWORD"
     return 1
   fi
 
@@ -230,7 +230,7 @@ function update_dockerhub_readme() {
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d "$api_payload" \
-    "https://hub.docker.com/v2/repositories/${docker_user}/${repo_name}/"); then
+    "https://hub.docker.com/v2/repositories/${docker_username}/${repo_name}/"); then
     log_error "dockerhub" "failed to request Docker Hub repository update API"
     return 1
   fi
