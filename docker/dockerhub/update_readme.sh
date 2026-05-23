@@ -8,8 +8,8 @@ Usage:
   update_dockerhub_readme [options]
 
 Options:
-  -u, --username <username>     Docker Hub username. Env: DOCKER_USERNAME
-  -p, --password <password>     Docker Hub password or personal access token. Env: DOCKER_PASSWORD
+  -u, --username <username>     Docker Hub username. Env: DOCKERHUB_USERNAME
+  -p, --password <password>     Docker Hub password or personal access token. Env: DOCKERHUB_PASSWORD
   -r, --repo <repo>             Docker Hub repository name. Env: REPO_NAME
   -f, --file <path>             README file path. Env: README_PATH. Default: ./README.md
   -d, --description <text>      Docker Hub short description. Env: SHORT_DESC
@@ -32,8 +32,8 @@ function update_readme_require_value() {
 }
 
 function update_dockerhub_readme() {
-  local docker_username="${DOCKER_USERNAME:-}"
-  local docker_password="${DOCKER_PASSWORD:-}"
+  local dockerhub_username="${DOCKERHUB_USERNAME:-}"
+  local dockerhub_password="${DOCKERHUB_PASSWORD:-}"
   local repo_name="${REPO_NAME:-}"
   local readme_path="${README_PATH:-./README.md}"
   local short_desc="${SHORT_DESC:-这是一个通过脚本自动更新的镜像描述。}"
@@ -55,11 +55,11 @@ function update_dockerhub_readme() {
           usage
           return 1
         fi
-        docker_username="$2"
+        dockerhub_username="$2"
         shift 2
         ;;
       --username=*)
-        docker_username="${1#*=}"
+        dockerhub_username="${1#*=}"
         shift
         ;;
       -p | --password)
@@ -68,11 +68,11 @@ function update_dockerhub_readme() {
           usage
           return 1
         fi
-        docker_password="$2"
+        dockerhub_password="$2"
         shift 2
         ;;
       --password=*)
-        docker_password="${1#*=}"
+        dockerhub_password="${1#*=}"
         shift
         ;;
       -r | --repo)
@@ -181,8 +181,8 @@ function update_dockerhub_readme() {
     export MSYS_NO_PATHCONV=1
   fi
 
-  update_readme_require_value "DOCKER_USERNAME" "$docker_username" || return 1
-  update_readme_require_value "DOCKER_PASSWORD" "$docker_password" || return 1
+  update_readme_require_value "DOCKERHUB_USERNAME" "$dockerhub_username" || return 1
+  update_readme_require_value "DOCKERHUB_PASSWORD" "$dockerhub_password" || return 1
   update_readme_require_value "REPO_NAME" "$repo_name" || return 1
 
   if ! command -v jq >/dev/null 2>&1; then
@@ -195,12 +195,12 @@ function update_dockerhub_readme() {
     return 1
   fi
 
-  log_info "dockerhub" "start update Docker Hub README for ${docker_username}/${repo_name}"
+  log_info "dockerhub" "start update Docker Hub README for ${dockerhub_username}/${repo_name}"
 
   log_info "auth" "request Docker Hub token"
   login_payload=$(jq -n \
-    --arg identifier "$docker_username" \
-    --arg secret "$docker_password" \
+    --arg identifier "$dockerhub_username" \
+    --arg secret "$dockerhub_password" \
     '{identifier: $identifier, secret: $secret}')
 
   if ! token_response=$(curl "${curl_proxy_args[@]}" -sSL \
@@ -215,7 +215,7 @@ function update_dockerhub_readme() {
   token=$(printf "%s" "$token_response" | jq -r '.access_token // .token // empty')
 
   if [[ "$token" == "null" || -z "$token" ]]; then
-    log_error "auth" "login failed, please check DOCKER_USERNAME and DOCKER_PASSWORD"
+    log_error "auth" "login failed, please check DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD"
     return 1
   fi
 
@@ -226,13 +226,13 @@ function update_dockerhub_readme() {
     '{description: $desc, full_description: $full_desc}')
 
   log_info "dockerhub" "upload README to Docker Hub"
+  curl_exit_code=0
   response_code=$(curl "${curl_proxy_args[@]}" -sS -o /dev/null -w "%{http_code}" \
     -X PATCH \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d "$api_payload" \
-    "https://hub.docker.com/v2/repositories/${docker_username}/${repo_name}/")
-  curl_exit_code=$?
+    "https://hub.docker.com/v2/repositories/${dockerhub_username}/${repo_name}/") || curl_exit_code=$?
 
   if [[ "$response_code" =~ ^2[0-9][0-9]$ ]]; then
     log_info "dockerhub" "Docker Hub README updated successfully"
