@@ -1,0 +1,49 @@
+name: Mirror Repository to Gitea
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    name: Mirror Repository to Gitea
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Mirror to Gitea
+        env:
+          # 示例：
+          # https://gitea_user:gitea_token@gitea.example.com/owner/repo.git
+          GITEA_REMOTE: ${{ secrets.GITEA_REMOTE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${GITEA_REMOTE:-}" ]]; then
+            echo "GITEA_REMOTE is empty"
+            exit 1
+          fi
+
+          echo "::add-mask::$GITEA_REMOTE"
+
+          git remote add gitea "$GITEA_REMOTE"
+
+          echo "Push branches to Gitea..."
+          git push --prune gitea \
+            "+refs/remotes/origin/*:refs/heads/*"
+
+          echo "Push tags to Gitea..."
+          git push --prune gitea \
+            "+refs/tags/*:refs/tags/*"
+
+          echo "Mirror completed."

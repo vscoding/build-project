@@ -1,0 +1,25 @@
+name: Mirror Repository to GitLab
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    name: Mirror Repository to GitLab
+    if: ${{ always() }}
+
+    env:
+      GITLAB_SSH_PRIVATE_KEY: ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
+      GITLAB_SSH_REMOTE: ${{ vars.GITLAB_SSH_REMOTE }}   # e.g. git@gitlab.com:group/repo.git
+
+    steps:
+      - name: Mirror to GitLab
+        uses: vscoding/gitlab-mirror-action@v1
+        with:
+          gitlab-ssh-private-key: ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
+          gitlab-ssh-remote: ${{ vars.GITLAB_SSH_REMOTE }}
+          source-branch: main
+          target-branch: main

@@ -42,7 +42,7 @@ function update_dockerhub_readme() {
   local token_response=""
   local token=""
   local login_payload=""
-  local api_payload=""
+  local api_payload_file=""
   local response_code=""
   local curl_exit_code=0
   local curl_output="/dev/null"
@@ -222,10 +222,14 @@ function update_dockerhub_readme() {
   fi
 
   log_info "readme" "read and convert $readme_path"
-  api_payload=$(jq -n \
+  api_payload_file="./dockerhub-readme-payload-$$.json"
+  if ! jq -n \
     --arg desc "$short_desc" \
     --rawfile full_desc "$readme_path" \
-    '{description: $desc, full_description: $full_desc}')
+    '{description: $desc, full_description: $full_desc}' >"$api_payload_file"; then
+    log_error "readme" "failed to generate Docker Hub README payload"
+    return 1
+  fi
 
   log_info "dockerhub" "upload README to Docker Hub"
   curl_exit_code=0
@@ -233,8 +237,9 @@ function update_dockerhub_readme() {
     -X PATCH \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
-    -d "$api_payload" \
+    --data-binary "@$api_payload_file" \
     "https://hub.docker.com/v2/repositories/${dockerhub_username}/${repo_name}/") || curl_exit_code=$?
+  rm -f "$api_payload_file"
 
   if [[ "$response_code" =~ ^2[0-9][0-9]$ ]]; then
     log_info "dockerhub" "Docker Hub README updated successfully"
