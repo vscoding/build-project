@@ -222,7 +222,7 @@ function update_dockerhub_readme() {
   fi
 
   log_info "readme" "read and convert $readme_path"
-  api_payload_file="./dockerhub-readme-payload-$$.json"
+  api_payload_file="dockerhub-readme-payload-$$.json"
   if ! jq -n \
     --arg desc "$short_desc" \
     --rawfile full_desc "$readme_path" \
