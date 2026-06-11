@@ -12,11 +12,6 @@ if is_windows; then
   export MSYS_NO_PATHCONV=1
 fi
 
-CURL_SINK="/dev/null"
-if is_windows; then
-  CURL_SINK="NUL"
-fi
-
 DOMAIN_CONFIG_FILE="${1:-${DOMAIN_CONFIG_FILE:-domain_config.json}}"
 RETRY_TIMES="${RETRY_TIMES:-3}"
 
@@ -39,6 +34,20 @@ if [ -z "$DNS_API_REQUEST_URL" ] || [ -z "$DNS_TOKEN" ]; then
   echo "DNS_API_REQUEST_URL or DNS_TOKEN is missing in environment"
   exit 1
 fi
+
+function print_response_body() {
+  local response_body="$1"
+
+  if [ -z "$response_body" ]; then
+    return 0
+  fi
+
+  if printf '%s' "$response_body" | jq -e . >/dev/null 2>&1; then
+    printf '%s' "$response_body" | jq .
+  else
+    printf '%s\n' "$response_body"
+  fi
+}
 
 TOTAL=0
 SUCCESS=0
@@ -67,14 +76,27 @@ while IFS=$'\t' read -r domain_name rr record_type record_value; do
 
   attempt=1
   request_ok=0
+  curl_code=0
+  http_code=""
+  response=""
+  response_body=""
+
   while [ $attempt -le $RETRY_TIMES ]; do
-    http_code=$(curl -sS -o "$CURL_SINK" -w "%{http_code}" -X POST "$DNS_API_REQUEST_URL" \
+    response=$(curl -sS -X POST "$DNS_API_REQUEST_URL" \
       -H "Authorization: Bearer $DNS_TOKEN" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
-      -d "$payload")
+      -d "$payload" \
+      -w $'\n__HTTP_CODE__:%{http_code}')
     curl_code=$?
-    http_code=$(printf '%s' "$http_code" | tr -d '\r\n')
+
+    http_code=$(printf '%s' "$response" | awk -F'__HTTP_CODE__:' 'END {print $2}' | tr -d '\r\n')
+    response_body=$(printf '%s' "$response" | sed '$d')
+
+    log_info "dns-update" "curl output: domain=$domain_name rr=$rr type=$record_type value=$record_value attempt=$attempt/$RETRY_TIMES curl_code=$curl_code http_code=$http_code"
+
+    log_info "dns-update" "response body: "
+    print_response_body "$response_body"
 
     if [ $curl_code -eq 0 ] && [ "$http_code" = "200" ]; then
       request_ok=1
