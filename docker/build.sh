@@ -27,7 +27,7 @@ declare -g re_tag_flag="true"
 declare -g new_tag=""
 declare -g push_flag="false"
 declare -ga build_args=()
-declare -g build_args_exec=""
+declare -ga build_args_exec=()
 
 log_info "docker build" ">>> docker build start <<<"
 
@@ -37,7 +37,7 @@ function cleanup() {
 trap cleanup EXIT
 
 function show_usage() {
-  cat <<EOF
+  cat <<'EOF'
 Docker Build Script Usage:
   -m  Multi platform (amd64 arm64), optional
   -d  Build directory, optional (if empty, uses Dockerfile's directory)
@@ -155,6 +155,7 @@ function validate_docker_tag() {
 
 function validate_build_args() {
   local -a args=("$@")
+  local build_arg
   for build_arg in "${args[@]}"; do
     if [[ ! "$build_arg" =~ ^[a-zA-Z_][a-zA-Z0-9_]*=.*$ ]]; then
       log_error "validation" "Invalid build-arg format: '$build_arg' (expected KEY=VALUE)"
@@ -252,17 +253,19 @@ function prepare_new_tag() {
 }
 
 function generate_build_args_exec() {
-  build_args_exec=""
+  local build_arg
+
+  build_args_exec=()
   if [ ${#build_args[@]} -eq 0 ]; then
     log_info "build_args" "No build arguments provided"
     return
   fi
 
   for build_arg in "${build_args[@]}"; do
-    build_args_exec="$build_args_exec --build-arg $build_arg"
+    build_args_exec+=(--build-arg "$build_arg")
   done
-  if [ -n "$build_args_exec" ]; then
-    log_info "build_args" "Build arguments: $build_args_exec"
+  if [ ${#build_args_exec[@]} -gt 0 ]; then
+    log_info "build_args" "Build arguments: ${build_args_exec[*]}"
   fi
 }
 
@@ -317,16 +320,17 @@ function build_and_push_image() {
 
   # 构建镜像
   if [ "$multi_platform" == "true" ]; then
-    log_info "docker_build" "Building multi-platform image: docker buildx build --platform linux/amd64,linux/arm64 -f $path_to_dockerfile $build_args_exec -t $image_name:$target_tag $build_dir"
-    docker buildx build --platform linux/amd64,linux/arm64 -f "$path_to_dockerfile" $build_args_exec -t "$image_name:$target_tag" "$build_dir"
+    log_info "docker_build" "Building multi-platform image: docker buildx build --platform linux/amd64,linux/arm64 -f $path_to_dockerfile ${build_args_exec[*]} -t $image_name:$target_tag $build_dir"
+    if ! docker buildx build --platform linux/amd64,linux/arm64 -f "$path_to_dockerfile" "${build_args_exec[@]}" -t "$image_name:$target_tag" "$build_dir"; then
+      log_error "docker_build" "Docker build failed for $image_name:$target_tag"
+      exit 1
+    fi
   else
-    log_info "docker_build" "Building image: docker build -f $path_to_dockerfile $build_args_exec -t $image_name:$target_tag $build_dir"
-    docker build -f "$path_to_dockerfile" $build_args_exec -t "$image_name:$target_tag" "$build_dir"
-  fi
-
-  if [ $? -ne 0 ]; then
-    log_error "docker_build" "Docker build failed for $image_name:$target_tag"
-    exit 1
+    log_info "docker_build" "Building image: docker build -f $path_to_dockerfile ${build_args_exec[*]} -t $image_name:$target_tag $build_dir"
+    if ! docker build -f "$path_to_dockerfile" "${build_args_exec[@]}" -t "$image_name:$target_tag" "$build_dir"; then
+      log_error "docker_build" "Docker build failed for $image_name:$target_tag"
+      exit 1
+    fi
   fi
 
   log_info "docker_build" "Successfully built $image_name:$target_tag"
@@ -334,8 +338,7 @@ function build_and_push_image() {
   # 推送镜像
   if [ "$should_push" == "true" ]; then
     log_info "docker_push" "Pushing image: $image_name:$target_tag"
-    docker push "$image_name:$target_tag"
-    if [ $? -eq 0 ]; then
+    if docker push "$image_name:$target_tag"; then
       log_info "docker_push" "Successfully pushed $image_name:$target_tag"
     else
       log_error "docker_push" "Failed to push $image_name:$target_tag"
@@ -351,15 +354,18 @@ function tag_and_push_image() {
 
   if [ "$source_tag" != "$target_tag" ]; then
     log_info "docker_tag" "Tagging image: $image_name:$source_tag -> $image_name:$target_tag"
-    docker tag "$image_name:$source_tag" "$image_name:$target_tag"
+    if ! docker tag "$image_name:$source_tag" "$image_name:$target_tag"; then
+      log_error "docker_tag" "Failed to tag image: $image_name:$source_tag -> $image_name:$target_tag"
+      exit 1
+    fi
 
     if [ "$should_push" == "true" ]; then
       log_info "docker_push" "Pushing tagged image: $image_name:$target_tag"
-      docker push "$image_name:$target_tag"
-      if [ $? -eq 0 ]; then
+      if docker push "$image_name:$target_tag"; then
         log_info "docker_push" "Successfully pushed $image_name:$target_tag"
       else
         log_error "docker_push" "Failed to push $image_name:$target_tag"
+        exit 1
       fi
     fi
   fi
