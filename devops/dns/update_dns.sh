@@ -12,7 +12,7 @@ if is_windows; then
   export MSYS_NO_PATHCONV=1
 fi
 
-DOMAIN_CONFIG_FILE="${1:-${DOMAIN_CONFIG_FILE:-domain_config.json}}"
+DNS_CONFIG_FILE="${1:-${DNS_CONFIG_FILE:-dns-config.json}}"
 RETRY_TIMES="${RETRY_TIMES:-3}"
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -25,13 +25,13 @@ if ! command -v curl >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -f "$DOMAIN_CONFIG_FILE" ]; then
-  echo "domain_config.json not found: $DOMAIN_CONFIG_FILE"
+if [ ! -f "$DNS_CONFIG_FILE" ]; then
+  echo "dns-config.json not found: $DNS_CONFIG_FILE"
   exit 1
 fi
 
-if [ -z "$DNS_API_REQUEST_URL" ] || [ -z "$DNS_TOKEN" ]; then
-  echo "DNS_API_REQUEST_URL or DNS_TOKEN is missing in environment"
+if [ -z "$DNS_API_REQUEST_URL" ] || [ -z "$DNS_API_TOKEN" ]; then
+  echo "DNS_API_REQUEST_URL or DNS_API_TOKEN is missing in environment"
   exit 1
 fi
 
@@ -83,7 +83,7 @@ while IFS=$'\t' read -r domain_name rr record_type record_value; do
 
   while [ $attempt -le $RETRY_TIMES ]; do
     response=$(curl -sS -X POST "$DNS_API_REQUEST_URL" \
-      -H "Authorization: Bearer $DNS_TOKEN" \
+      -H "Authorization: Bearer $DNS_API_TOKEN" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
       -d "$payload" \
@@ -116,6 +116,6 @@ while IFS=$'\t' read -r domain_name rr record_type record_value; do
     FAILED=$((FAILED + 1))
     log_error "dns-update" "failed: domain=$domain_name rr=$rr type=$record_type value=$record_value curl_code=$curl_code http_code=$http_code retries=$RETRY_TIMES"
   fi
-done < <(jq -r '.[] | .domain_name as $d | .type as $t | .value as $v | .rr_list[] | [$d, ., $t, $v] | @tsv' "$DOMAIN_CONFIG_FILE" | tr -d '\r')
+done < <(jq -r '.[] | .domain_name as $d | .type as $t | .value as $v | .rr_list[] | [$d, ., $t, $v] | @tsv' "$DNS_CONFIG_FILE" | tr -d '\r')
 
 log_info "dns-update" "finished: total=$TOTAL success=$SUCCESS failed=$FAILED"
