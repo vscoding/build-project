@@ -1,0 +1,19 @@
+{
+  "cp_host": "http://localhost:8080",
+  "configs": [
+    {
+      "cp_cert_key": "example.com",
+      "cp_cert_token": "example-token",
+      "download_dir": "/tmp",
+      "cert_filename": "example.com.crt",
+      "private_key_filename": "example.com.key"
+    },
+    {
+      "cp_cert_key": "example.org",
+      "cp_cert_token": "example-token",
+      "download_dir": "/tmp",
+      "cert_filename": "example.org.crt",
+      "private_key_filename": "example.org.key"
+    }
+  ]
+}
