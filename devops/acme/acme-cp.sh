@@ -46,34 +46,45 @@ download() {
   local name="$1"
   local uri="$2"
   local output_file="$3"
+  local curl_result
   local http_code
+  local size_download
+  local time_total
   local curl_code
 
-  http_code=$(curl --silent --show-error --location \
+  log_info "acme-cp" \
+    "download started: name=$name key=$CP_CERT_KEY url=${CP_HOST}${uri} output=$output_file"
+
+  curl_result=$(curl --silent --show-error --location \
     --output "$output_file" \
-    --write-out "%{http_code}" \
+    --write-out $'%{http_code}\t%{size_download}\t%{time_total}' \
     --get \
     --data-urlencode "key=$CP_CERT_KEY" \
     --header "Authorization: Bearer $CP_TOKEN" \
     "${CP_HOST}${uri}")
   curl_code=$?
+  IFS=$'\t' read -r http_code size_download time_total <<<"$curl_result"
 
   if [ "$curl_code" -ne 0 ]; then
-    log_error "acme-cp" "download failed: name=$name curl_code=$curl_code"
+    log_error "acme-cp" \
+      "download failed: name=$name key=$CP_CERT_KEY url=${CP_HOST}${uri} output=$output_file curl_code=$curl_code http_code=${http_code:-unknown} bytes=${size_download:-0} duration=${time_total:-unknown}s"
     return 1
   fi
 
   if [ "$http_code" != "200" ]; then
-    log_error "acme-cp" "download failed: name=$name http_code=$http_code"
+    log_error "acme-cp" \
+      "download failed: name=$name key=$CP_CERT_KEY url=${CP_HOST}${uri} output=$output_file curl_code=$curl_code http_code=$http_code bytes=${size_download:-0} duration=${time_total:-unknown}s"
     return 1
   fi
 
   if [ ! -s "$output_file" ]; then
-    log_error "acme-cp" "download failed: name=$name response body is empty"
+    log_error "acme-cp" \
+      "download failed: name=$name key=$CP_CERT_KEY url=${CP_HOST}${uri} output=$output_file response_body=empty http_code=$http_code bytes=${size_download:-0} duration=${time_total:-unknown}s"
     return 1
   fi
 
-  log_info "acme-cp" "downloaded: name=$name http_code=$http_code"
+  log_info "acme-cp" \
+    "download completed: name=$name key=$CP_CERT_KEY url=${CP_HOST}${uri} output=$output_file http_code=$http_code bytes=$size_download duration=${time_total}s"
 }
 
 trap cleanup EXIT
@@ -203,4 +214,4 @@ fi
 metadata_tmp=""
 
 log_info "acme-cp" \
-  "certificate downloaded: key=$CP_CERT_KEY fingerprintSha256=$remote_fingerprint dir=$download_dir"
+  "certificate downloaded: key=$CP_CERT_KEY fingerprintSha256=$remote_fingerprint certificate=$cert_file private_key=$private_key_file metadata=$metadata_file"
