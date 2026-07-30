@@ -14,9 +14,9 @@ declare -r CERT_FILENAME="${CERT_FILENAME:-fullchain.pem}"
 declare -r PRIVATE_KEY_FILENAME="${PRIVATE_KEY_FILENAME:-private.key}"
 unset cp_host_value
 
-declare -r metadata_uri="/api/acme-client/certificate/metadata"
-declare -r fullchain_uri="/api/acme-client/certificate/fullchain.cer"
-declare -r private_key_uri="/api/acme-client/certificate/private.key"
+declare -r metadata_uri="/api/artifacts/certificates/metadata"
+declare -r fullchain_uri="/api/artifacts/certificates/fullchain.cer"
+declare -r private_key_uri="/api/artifacts/certificates/private.key"
 
 download_dir="${DOWNLOAD_DIR%/}"
 [ -z "$download_dir" ] && download_dir="/"
