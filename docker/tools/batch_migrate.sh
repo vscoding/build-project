@@ -1,18 +1,80 @@
 #!/bin/bash
 # shellcheck disable=SC2164,SC1090,SC2086
-declare -g config_json="$1"
-declare -g test_mode=${2:-false}
+declare -g config_json=""
+declare -g test_mode="false"
+declare -g remove_after_migrate="${REMOVE_AFTER_MIGRATE:-false}"
 
-if [ -z "$config_json" ]; then
-  echo "Usage: ./batch_migrate.sh <config_json> [test_mode]"
-  echo "  config_json: Path to the configuration JSON file"
-  echo "  test_mode: Optional, set to 'true' to enable test mode (default: false)"
+function usage() {
+  echo "Usage: ./batch_migrate.sh -f <config_json> [-t <true|false>] [-r <true|false>]"
+  echo "  -f: Path to the configuration JSON file"
+  echo "  -t: Optional, enable or disable test mode (default: false)"
+  echo "  -r: Optional, remove local images after migration (overrides REMOVE_AFTER_MIGRATE)"
+  echo "  REMOVE_AFTER_MIGRATE: Optional environment variable, true or false (default: false)"
+}
+
+while getopts ":f:t:r:" opt; do
+  case "$opt" in
+    f)
+      config_json="$OPTARG"
+      ;;
+    t)
+      case "$OPTARG" in
+        true | false)
+          test_mode="$OPTARG"
+          ;;
+        *)
+          echo "Invalid value for -t: $OPTARG (expected true or false)" >&2
+          usage >&2
+          exit 1
+          ;;
+      esac
+      ;;
+    r)
+      case "$OPTARG" in
+        true | false)
+          remove_after_migrate="$OPTARG"
+          ;;
+        *)
+          echo "Invalid value for -r: $OPTARG (expected true or false)" >&2
+          usage >&2
+          exit 1
+          ;;
+      esac
+      ;;
+    :)
+      echo "Option -$OPTARG requires a value" >&2
+      usage >&2
+      exit 1
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+case "$remove_after_migrate" in
+  true | false)
+    ;;
+  *)
+    echo "Invalid value for REMOVE_AFTER_MIGRATE: $remove_after_migrate (expected true or false)" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+if [[ $# -ne 0 ]]; then
+  echo "Unexpected positional arguments: $*" >&2
+  usage >&2
   exit 1
 fi
 
-# 如果 test_mode 不是false，则启用测试模式，设置为true
-if [[ "$test_mode" != "false" ]]; then
-  test_mode="true"
+if [[ -z "$config_json" ]]; then
+  echo "Option -f is required" >&2
+  usage >&2
+  exit 1
 fi
 
 [ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
@@ -87,6 +149,7 @@ function migrate() {
   # 遍历 tags
   for tag in "${tags[@]}"; do
     local from="$from_image_name:$tag"
+    local -a migrated_images=("$from")
 
     # 遍历 to_list
     for target in "${to_list[@]}"; do
@@ -112,6 +175,7 @@ function migrate() {
       }
 
       local to="$target_name:$tag"
+      migrated_images+=("$to")
 
       # 遍历 platforms
       for platform in "${platforms[@]}"; do
@@ -138,6 +202,15 @@ function migrate() {
         fi
       done
     done
+
+    if [[ "$remove_after_migrate" == "true" && "$test_mode" == "false" ]]; then
+      log_info "remove_images" "docker image rm -f ${migrated_images[*]}"
+      if docker image rm -f "${migrated_images[@]}"; then
+        log_info "remove_images" "local images removed after migration"
+      else
+        log_warn "remove_images" "failed to remove one or more local images"
+      fi
+    fi
   done
 }
 
