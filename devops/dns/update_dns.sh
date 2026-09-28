@@ -52,9 +52,35 @@ function print_response_body() {
 TOTAL=0
 SUCCESS=0
 FAILED=0
+SKIPPED=0
+DECLINED_DOMAINS=()
+
+while IFS= read -r domain_name; do
+  read -r -p "Update DNS records for $domain_name? [y/N]: " answer
+  case "$answer" in
+    [Yy]) ;;
+    *)
+      DECLINED_DOMAINS+=("$domain_name")
+      log_warn "dns-update" "skipped by user: domain=$domain_name"
+      ;;
+  esac
+done < <(jq -r '[.[] | select(.require_confirm == true) | .domain_name] | unique[]' "$DNS_CONFIG_FILE" | tr -d '\r')
 
 while IFS=$'\t' read -r domain_name rr record_type record_value; do
   TOTAL=$((TOTAL + 1))
+
+  skip_domain=false
+  for declined_domain in "${DECLINED_DOMAINS[@]}"; do
+    if [ "$declined_domain" = "$domain_name" ]; then
+      skip_domain=true
+      break
+    fi
+  done
+  if [ "$skip_domain" = true ]; then
+    SKIPPED=$((SKIPPED + 1))
+    continue
+  fi
+
   if [ -z "$record_type" ]; then
     FAILED=$((FAILED + 1))
     log_error "dns-update" "failed: domain=$domain_name rr=$rr type is empty"
@@ -118,4 +144,4 @@ while IFS=$'\t' read -r domain_name rr record_type record_value; do
   fi
 done < <(jq -r '.[] | .domain_name as $d | .type as $t | .value as $v | .rr_list[] | [$d, ., $t, $v] | @tsv' "$DNS_CONFIG_FILE" | tr -d '\r')
 
-log_info "dns-update" "finished: total=$TOTAL success=$SUCCESS failed=$FAILED"
+log_info "dns-update" "finished: total=$TOTAL success=$SUCCESS failed=$FAILED skipped=$SKIPPED"

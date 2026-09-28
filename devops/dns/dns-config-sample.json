@@ -1,6 +1,7 @@
 [
   {
     "domain_name": "example.com",
+    "require_confirm": true,
     "rr_list": [
       "www",
       "sample"
