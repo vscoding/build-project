@@ -21,17 +21,55 @@ fi
 
 OUT_DIR="${1:-${OUT_DIR:-$(pwd)}}"
 DAYS="${DAYS:-825}"
-RSA_BITS="${RSA_BITS:-2048}"
 CERT_CN="${CERT_CN:-localhost}"
 CERT_SAN_DNS="${CERT_SAN_DNS:-localhost}"
+CERT_SAN_IP="${CERT_SAN_IP:-}"
+CERT_FILENAME="${CERT_FILENAME:-fullchain.cer}"
+KEY_FILENAME="${KEY_FILENAME:-private.key}"
+
+KEY_CHOICE=""
+while true; do
+  printf '%s\n' \
+    "Select key type:" \
+    "  1) ecdsa:256 (default)" \
+    "  2) rsa:2048" \
+    "  3) rsa:4096"
+  read -r -p "Enter choice [1]: " KEY_CHOICE
+  case "${KEY_CHOICE:-1}" in
+    1)
+      NEWKEY_ALGORITHM="ec"
+      KEYGEN_OPTIONS=(-pkeyopt ec_paramgen_curve:P-256)
+      KEY_TYPE="ecdsa:256"
+      KEY_USAGE="digitalSignature"
+      break
+      ;;
+    2)
+      NEWKEY_ALGORITHM="rsa:2048"
+      KEYGEN_OPTIONS=()
+      KEY_TYPE="rsa:2048"
+      KEY_USAGE="digitalSignature, keyEncipherment"
+      break
+      ;;
+    3)
+      NEWKEY_ALGORITHM="rsa:4096"
+      KEYGEN_OPTIONS=()
+      KEY_TYPE="rsa:4096"
+      KEY_USAGE="digitalSignature, keyEncipherment"
+      break
+      ;;
+    *)
+      log_warn "build" "invalid key type selection: $KEY_CHOICE"
+      ;;
+  esac
+done
 
 if ! mkdir -p -- "$OUT_DIR"; then
   log_error "build" "failed to create output directory: $OUT_DIR"
   exit 1
 fi
 
-CERT_FILE="$OUT_DIR/fullchain.cer"
-KEY_FILE="$OUT_DIR/private.key"
+CERT_FILE="$OUT_DIR/$CERT_FILENAME"
+KEY_FILE="$OUT_DIR/$KEY_FILENAME"
 
 OPENSSL_CERT_FILE="$CERT_FILE"
 OPENSSL_KEY_FILE="$KEY_FILE"
@@ -61,9 +99,37 @@ for san_index in "${!SAN_DNS_ARRAY[@]}"; do
   SAN_ENTRIES+="DNS.$((san_index + 1)) = ${SAN_DNS_ARRAY[$san_index]}\n"
 done
 
+SAN_IP_ARRAY=()
+IFS=',' read -r -a EXTRA_SAN_IP_ARRAY <<<"$CERT_SAN_IP"
+
+for ip_address in "${EXTRA_SAN_IP_ARRAY[@]}"; do
+  ip_address="${ip_address// /}"
+  [ -n "$ip_address" ] || continue
+
+  san_exists=0
+  for existing_ip_address in "${SAN_IP_ARRAY[@]}"; do
+    if [ "$existing_ip_address" = "$ip_address" ]; then
+      san_exists=1
+      break
+    fi
+  done
+
+  if [ "$san_exists" -eq 0 ]; then
+    SAN_IP_ARRAY+=("$ip_address")
+  fi
+done
+
+for san_index in "${!SAN_IP_ARRAY[@]}"; do
+  SAN_ENTRIES+="IP.$((san_index + 1)) = ${SAN_IP_ARRAY[$san_index]}\n"
+done
+
 RESOLVED_SAN_DNS=$(
   IFS=,
   printf '%s' "${SAN_DNS_ARRAY[*]}"
+)
+RESOLVED_SAN_IP=$(
+  IFS=,
+  printf '%s' "${SAN_IP_ARRAY[*]}"
 )
 
 OPENSSL_CNF_FILE="$(mktemp "${OUT_DIR%/}/openssl-fallback-XXXXXX.cnf")"
@@ -79,13 +145,12 @@ fi
 
 log_info "build" "generating test certificate"
 log_info "build" \
-  "parameters: cn=$CERT_CN san=$RESOLVED_SAN_DNS days=$DAYS rsa_bits=$RSA_BITS"
+  "parameters: cn=$CERT_CN san=$RESOLVED_SAN_DNS san_ip=$RESOLVED_SAN_IP days=$DAYS key_type=$KEY_TYPE"
 log_info "build" \
   "output files: certificate=$CERT_FILE private_key=$KEY_FILE"
 
 cat >"$OPENSSL_CNF_FILE" <<EOF
 [req]
-default_bits = ${RSA_BITS}
 prompt = no
 default_md = sha256
 distinguished_name = dn
@@ -96,7 +161,7 @@ CN = ${CERT_CN}
 
 [v3_req]
 basicConstraints = CA:FALSE
-keyUsage = digitalSignature, keyEncipherment
+keyUsage = ${KEY_USAGE}
 extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
@@ -107,7 +172,8 @@ EOF
 openssl req \
   -x509 \
   -nodes \
-  -newkey "rsa:${RSA_BITS}" \
+  -newkey "$NEWKEY_ALGORITHM" \
+  "${KEYGEN_OPTIONS[@]}" \
   -keyout "$OPENSSL_KEY_FILE" \
   -out "$OPENSSL_CERT_FILE" \
   -days "$DAYS" \
@@ -143,4 +209,4 @@ else
 fi
 
 log_info "build" \
-  "test certificate generation completed: cn=$CERT_CN san=$RESOLVED_SAN_DNS"
+  "test certificate generation completed: cn=$CERT_CN san=$RESOLVED_SAN_DNS san_ip=$RESOLVED_SAN_IP"
