@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1090,SC2086,SC2155,SC2128,SC2028,SC2162,SC2034
 source <(curl -sSL https://dev.kubectl.net/func/log.sh)
 

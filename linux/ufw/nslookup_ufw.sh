@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2164 disable=SC2155 disable=SC2046 disable=SC2086
 
 DOMAIN=$1

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function image_exists() {
   docker image inspect "$1" >/dev/null 2>&1

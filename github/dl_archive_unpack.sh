@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1090,SC2181
 set -euo pipefail
 IFS=$'\n\t'

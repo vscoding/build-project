@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 function fetch_latest_tag() {
   local repo=$1
   local proxy=$2

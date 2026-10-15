@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1090 disable=SC2028
 [ -z "${ROOT_URI:-}" ] && source <(curl -fsSL https://dev.kubectl.org/init)
 # ROOT_URI=https://dev.kubectl.net

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2034
 sshd_config_file="/etc/ssh/sshd_config"
 

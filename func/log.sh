@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ====== 颜色定义 ======
 NC='\033[0m'              # reset
 TS_COLOR='\033[0;36m'     # 时间青色

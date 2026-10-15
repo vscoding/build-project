@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1090 disable=SC2181
 set -euo pipefail
 # 初始化根URI和依赖

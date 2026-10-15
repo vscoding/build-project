@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2086,SC2046,SC2126,SC2155,SC1090,SC2028
 set -euo pipefail
 IFS=$'\n\t'

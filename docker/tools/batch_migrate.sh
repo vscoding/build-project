@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2164,SC1090,SC2086
 declare -g config_json=""
 declare -g test_mode="false"

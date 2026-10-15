@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2164,SC1090,SC2086
 [ -z $ROOT_URI ] && source <(curl -sSL https://dev.kubectl.org/init)
 echo -e "\033[0;32mROOT_URI=$ROOT_URI\033[0m"
