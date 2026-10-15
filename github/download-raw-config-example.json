@@ -1,0 +1,22 @@
+{
+  "request": {
+    "proxy": "http://127.0.0.1:10808"
+  },
+  "download": {
+    "directory": "./downloads"
+  },
+  "raws": [
+    {
+      "repo": "openresty/openresty",
+      "path": "README.md",
+      "branch": "master"
+    },
+    {
+      "repo": "openresty/openresty",
+      "path": "README.md",
+      "branch": "master",
+      "saveAs": "README2.md",
+      "directory": "./downloads/other"
+    }
+  ]
+}
