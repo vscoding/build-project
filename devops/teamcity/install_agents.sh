@@ -131,7 +131,7 @@ WantedBy=multi-user.target
 
 [Service]
 Environment=JAVA_HOME=$JAVA_HOME
-ExecStart=$teamcity_agent_path/agent%i/bin/agent.sh start
+ExecStart=/bin/bash -lc '$teamcity_agent_path/agent%i/bin/agent.sh start'
 Type=forking
 RemainAfterExit=yes
 User=root
@@ -139,7 +139,7 @@ Group=root
 SyslogIdentifier=teamcity_agent
 PrivateTmp=yes
 PIDFile=$teamcity_agent_path/agent%i/logs/buildAgent.pid
-ExecStop=$teamcity_agent_path/agent%i/bin/agent.sh stop
+ExecStop=/bin/bash -lc '$teamcity_agent_path/agent%i/bin/agent.sh stop'
 RestartSec=5
 Restart=on-failure
 EOF
