@@ -28,17 +28,16 @@ prepare
 download() {
   rm -f "$download_target_file"
 
-  curl -X POST https://ctrl.iproute.org/api/relay \
+  curl -X POST https://ctrl.kubectl.org/api/relay \
     -H "Content-Type: application/json" \
     -d "{\"url\":\"https://github.com/nvm-sh/nvm/archive/refs/tags/${nvm_version}.tar.gz\",\"headers\":{}}" \
     -o "$download_target_file"
 
-  if [[ -s "$download_target_file" ]]; then
-    log_info "download" "download success"
-  else
+  if [[ ! -s "$download_target_file" ]]; then
     log_error "download" "download failed"
     exit 1
   fi
+  log_info "download" "download success"
 }
 
 # -------------------------------
@@ -54,8 +53,10 @@ before_clear() {
 # -------------------------------
 unzip_and_move() {
   log_info "unzip" "extract nvm to $HOME"
-  tar -zxf "$download_target_file" -C "$HOME"
-
+  if ! tar -zxf "$download_target_file" -C "$HOME"; then
+    log_error "unzip" "failed to extract $download_target_file"
+    exit 1
+  fi
   log_info "move" "mv $HOME/nvm $HOME/.nvm"
   # 解压后的文件是  nvm-版本号，移动到 .nvm
   mv "$HOME/nvm-"* "$HOME/.nvm"
@@ -66,28 +67,23 @@ unzip_and_move() {
 # -------------------------------
 config_bashrc() {
   local config_file="$HOME/.bashrc"
-  local nvm_nodejs_mirror="https://npmmirror.com/mirrors/node/"
 
   log_info "config" "update $config_file"
   sed -i '/^# NVM CONFIG START$/,/^# NVM CONFIG END$/d' "$config_file"
 
-  cat <<EOF >>"$config_file"
-# NVM CONFIG START
-export NVM_DIR="\$HOME/.nvm"
-[ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "\$NVM_DIR/bash_completion" ] && \. "\$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+  printf '%s\n' '# NVM CONFIG START
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-export NVM_NODEJS_ORG_MIRROR=$nvm_nodejs_mirror
-# NVM CONFIG END
-EOF
+export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node/
+# NVM CONFIG END' >>"$config_file"
 }
 
 config_npmrc() {
   local config_file="$HOME/.npmrc"
   log_info "config" "update $config_file"
-  cat >"$config_file" <<EOF
-registry=https://registry.npmmirror.com
-EOF
+  printf '%s\n' 'registry=https://registry.npmmirror.com' >"$config_file"
 }
 
 # -------------------------------
