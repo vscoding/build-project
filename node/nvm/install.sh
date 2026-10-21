@@ -6,8 +6,7 @@
 source <(curl -sSL "$ROOT_URI/func/log.sh")
 source <(curl -sSL "$ROOT_URI/func/command_exists.sh")
 
-# 允许外部指定版本，默认 v0.40.1
-nvm_version="${NVM_VERSION:-v0.40.4}"
+nvm_version="v0.40.8"
 download_target_file="/tmp/nvm_$nvm_version.tar.gz"
 
 log_info "install" "start install nvm by root user, version=$nvm_version"
@@ -29,9 +28,9 @@ prepare
 download() {
   rm -f "$download_target_file"
 
-  curl -fsSL -X POST "https://mirrors.iproute.org/github/archive" \
+  curl -X POST https://ctrl.iproute.org/api/relay \
     -H "Content-Type: application/json" \
-    -d "{\"repo\":\"nvm-sh/nvm\",\"tag\":\"$nvm_version\"}" \
+    -d "{\"url\":\"https://github.com/nvm-sh/nvm/archive/refs/tags/${nvm_version}.zip\",\"headers\":{}}" \
     -o "$download_target_file"
 
   if [[ -s "$download_target_file" ]]; then
