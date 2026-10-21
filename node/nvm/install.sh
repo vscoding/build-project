@@ -30,7 +30,7 @@ download() {
 
   curl -X POST https://ctrl.iproute.org/api/relay \
     -H "Content-Type: application/json" \
-    -d "{\"url\":\"https://github.com/nvm-sh/nvm/archive/refs/tags/${nvm_version}.zip\",\"headers\":{}}" \
+    -d "{\"url\":\"https://github.com/nvm-sh/nvm/archive/refs/tags/${nvm_version}.tar.gz\",\"headers\":{}}" \
     -o "$download_target_file"
 
   if [[ -s "$download_target_file" ]]; then
