@@ -84,11 +84,12 @@ function validate_params() {
 
   if [ -z "$specified_version" ]; then
     log_info "validate" "No version specified, fetching latest tag"
-    version=$(fetch_latest_tag "$repo" "$proxy")
-    [[ -z "$version" ]] && {
+    local tag_opts=()
+    [ -n "$proxy" ] && tag_opts+=(--proxy "$proxy")
+    if ! version=$(fetch_latest_tag "$repo" "${tag_opts[@]}"); then
       log_error "validate" "Failed to fetch latest tag for $repo"
       exit 1
-    }
+    fi
   else
     log_info "validate" "Using specified version: $specified_version"
     version="$specified_version"
